@@ -1,3 +1,8 @@
+package parser;
+
+import codegen.CodeGenerator;
+import scanner.Lexical;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -57,7 +62,7 @@ public class Parser {
         this.recoveryState = new ArrayList<>();
 
         if (!Files.exists(Paths.get(nptPath))) {
-            throw new RuntimeException("Parser table not found: " + nptPath);
+            throw new RuntimeException("parser.Parser table not found: " + nptPath);
         }
 
         try {
@@ -79,7 +84,7 @@ public class Parser {
                 for (int j = 0; j < colSize; j++) {
                     String[] cellParts = tmpArr[j].split(" ");
                     if (cellParts.length != 3) {
-                        throw new RuntimeException("Invalid .npt file: Parser cells must have extactly 3 values.");
+                        throw new RuntimeException("Invalid .npt file: parser.Parser cells must have extactly 3 values.");
                     }
                     Action action = Action.values()[Integer.parseInt(cellParts[0])];
                     int target = Integer.parseInt(cellParts[1]);

@@ -121,11 +121,11 @@ Special_Characters = "\\n" | "\\t" | "\\r" | "\\\""
 
     <STRING>{
         {DoubleQoutes} {
-          String temp = string;
-          string = "";
-          yybegin(YYINITIAL);
-          return new Symbol(temp,TokenType.STRING,yyline,yycolumn);
-         }
+                  String temp = string;
+                  string = "";
+                  yybegin(YYINITIAL);
+                  return new scanner.Symbol(temp,TokenType.STRING,yyline,yycolumn);
+                 }
         {Special_Characters} {
           string += yytext();
           yybegin(STRING);

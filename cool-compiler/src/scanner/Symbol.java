@@ -1,3 +1,4 @@
+package scanner;
 
 public class Symbol {
     public String token;

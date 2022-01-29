@@ -1,4 +1,8 @@
 
+import codegen.CodeGeneratorImpl;
+import parser.Parser;
+import scanner.LexicalAnalyser;
+
 import java.io.*;
 
 public class Main {
