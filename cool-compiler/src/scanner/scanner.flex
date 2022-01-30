@@ -1,4 +1,6 @@
 /* this section will be added at the first of java file */
+package scanner;
+
 %%
 
 
@@ -20,10 +22,13 @@
 
 %{
     public int ICV;
+    public boolean logSymbols = true;
     public String string = "";
             public String nextToken(){
                 try{
                     Symbol current = next();
+                    if(logSymbols)
+                        System.out.println(current);
                     if (current == null)
                         return "$";
                     switch (current.getType()){
@@ -100,7 +105,7 @@ Special_Characters = "\\n" | "\\t" | "\\r" | "\\\""
 
 %% /*  states */
 <YYINITIAL> {
-    {ReservedKeyWords} {return new Symbol(yytext(),src.TokenType.RESERVED,yyline,yycolumn);}
+    {ReservedKeyWords} {return new Symbol(yytext(),TokenType.RESERVED,yyline,yycolumn);}
     {Operator} {return new Symbol(yytext(),TokenType.OPERATOR,yyline,yycolumn);}
     {Identifier} {return new Symbol(yytext(),TokenType.IDENTIFIER,yyline,yycolumn);}
     ({SingleLineComment} | {MultiLineComment}) {return new Symbol(yytext(),TokenType.COMMENT,yyline,yycolumn);}
