@@ -28,7 +28,6 @@ public class Main {
 //            System.out.println("Run like bellow:\njava <javaClassFile> --input <inputCoolFilePath> --output <outputFilePath> --table <tablePath>");
 //            return;
 //        }
-        // test
 
         File file = new File(inputCoolFilePath);
         LexicalAnalyser scanner = new LexicalAnalyser(new FileReader(file));
