@@ -9,6 +9,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public Stack<Descriptor> semanticStack;
     public Helper helper;
 
+
     public CodeGeneratorImpl(){
         semanticStack = new Stack<>();
         helper = new Helper();
