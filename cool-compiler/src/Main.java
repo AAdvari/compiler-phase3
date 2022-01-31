@@ -30,6 +30,7 @@ public class Main {
 //        }
         // this is a push
         // this is a secind push
+        // third
 
         File file = new File(inputCoolFilePath);
         LexicalAnalyser scanner = new LexicalAnalyser(new FileReader(file));
