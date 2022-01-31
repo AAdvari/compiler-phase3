@@ -8,3 +8,4 @@
 /httpRequests/
 *.xml
 .gitignore
+/.idea
