@@ -24,9 +24,10 @@ package scanner;
     public int ICV;
     public boolean logSymbols = true;
     public String string = "";
+    public Symbol currentSymbol;
             public String nextToken(){
                 try{
-                    Symbol current = next();
+                    currentSymbol = next();
                     if(logSymbols)
                         System.out.println(current);
                     if (current == null)

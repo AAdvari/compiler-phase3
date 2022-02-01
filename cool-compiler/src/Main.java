@@ -31,7 +31,7 @@ public class Main {
 
         File file = new File(inputCoolFilePath);
         LexicalAnalyser scanner = new LexicalAnalyser(new FileReader(file));
-        CodeGeneratorImpl codeGenerator = new CodeGeneratorImpl();
+        CodeGeneratorImpl codeGenerator = new CodeGeneratorImpl(scanner);
         Parser parser = new Parser(scanner, codeGenerator, tablePath);
 
         try{

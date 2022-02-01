@@ -1,6 +1,5 @@
 package codegen.dscp;
 
-public class Descriptor {
-
+public interface Descriptor {
 }
 
