@@ -1,24 +1,27 @@
 package codegen;
 
+import codegen.dscp.ClassDescriptor;
 import codegen.dscp.Descriptor;
+import codegen.dscp.MethodDescriptor;
 import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
 import java.util.ArrayList;
 import java.util.Stack;
-
+import scanner.Symbol;
 public class CodeGeneratorImpl implements CodeGenerator {
 
     public LexicalAnalyser scanner;
     public Stack<Descriptor> semanticStack;
     public Helper helper;
-    public Descriptor currentClass;
-    public ArrayList<Descriptor> activeFunctions;
-
+    public ClassDescriptor currentClass;
+    public MethodDescriptor currentMethod;
+    public Descriptor[] objectDescriptors;
+    public boolean inDcl;
     public CodeGeneratorImpl(LexicalAnalyser scanner){
         this.scanner = scanner;
         semanticStack = new Stack<>();
         helper = new Helper();
-        activeFunctions = new ArrayList<>(3);
+        inDcl = false;
     }
 
     @Override
@@ -37,8 +40,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
     public void push(){
-        System.out.println("Pushing : ");
-        System.out.println(scanner.currentSymbol);
+        Symbol currentSym = scanner.currentSymbol;
+
 
     }
     public void add(){
@@ -46,5 +49,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         System.out.println(scanner.currentSymbol);
     }
     public void subtract(){
+
     }
 }
