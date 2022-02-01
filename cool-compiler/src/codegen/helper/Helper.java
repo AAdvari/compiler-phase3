@@ -2,13 +2,14 @@ package codegen.helper;
 
 import codegen.dscp.Descriptor;
 import codegen.dscp.PrimitiveDescriptor;
-import codegen.dscp.PrimitiveType;
-import com.sun.javaws.exceptions.ErrorCodeResponseException;
 
 public class Helper {
     public StringBuilder generatedCode;
     public StringBuilder dataCode;
+
+
     private int currentAddress;
+
     public Helper(){
         generatedCode = new StringBuilder();
         dataCode = new StringBuilder();
@@ -43,6 +44,7 @@ public class Helper {
 
         return "";
     }
+
     public void addWhiteSpace(boolean toDataCode){
         if (toDataCode)
             dataCode.append("\n\t\t");

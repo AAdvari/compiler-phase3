@@ -3,7 +3,6 @@ package codegen;
 import codegen.dscp.Descriptor;
 import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
-
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -14,12 +13,14 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public Helper helper;
     public Descriptor currentClass;
     public ArrayList<Descriptor> activeFunctions;
+
     public CodeGeneratorImpl(LexicalAnalyser scanner){
         this.scanner = scanner;
         semanticStack = new Stack<>();
         helper = new Helper();
         activeFunctions = new ArrayList<>(3);
     }
+
     @Override
     public void doSemantic(String sem) {
         switch (sem){
@@ -45,6 +46,5 @@ public class CodeGeneratorImpl implements CodeGenerator {
         System.out.println(scanner.currentSymbol);
     }
     public void subtract(){
-
     }
 }
