@@ -2,9 +2,10 @@ package codegen.dscp;
 
 import java.util.ArrayList;
 
-public class ClassDescriptor implements Descriptor {
+public class ClassDescriptor extends Descriptor {
     public ArrayList<Descriptor> fields;
-    public ClassDescriptor(){
+    public ClassDescriptor(String symName){
+        super(symName);
         this.fields = new ArrayList<>();
     }
 }
