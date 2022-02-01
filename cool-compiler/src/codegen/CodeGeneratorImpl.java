@@ -3,6 +3,7 @@ package codegen;
 import codegen.dscp.ClassDescriptor;
 import codegen.dscp.Descriptor;
 import codegen.dscp.MethodDescriptor;
+import codegen.dscp.PrimitiveDescriptor;
 import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
 import java.util.ArrayList;
@@ -36,13 +37,24 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "subtract":
                 subtract();
                 break;
+            case "trace_object":
+                break;
         }
     }
 
     public void push(){
-        Symbol currentSym = scanner.currentSymbol;
+        String symName = scanner.currentSymbol.getToken();
 
-
+        if (currentMethod.symTable.containsKey(symName)){
+            Descriptor descriptor = currentMethod.symTable.get(symName);
+            semanticStack.push(descriptor);
+        }
+        else if (currentClass.fields.containsKey(symName)){
+            // TODO : Implement Pushing For Class Attributes
+            System.out.println("Pushing variable is a field!");
+        }
+        else
+            throw new Error("Literal is not declared within current scope!");
     }
     public void add(){
         System.out.println("Adding");
