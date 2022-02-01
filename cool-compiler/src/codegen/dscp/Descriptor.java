@@ -1,5 +1,9 @@
 package codegen.dscp;
 
-public interface Descriptor {
+public class Descriptor {
+    public String symName;
+    public Descriptor(String symName){
+        this.symName = symName;
+    }
 }
 

@@ -1,5 +1,7 @@
 package codegen.dscp;
 
-public class MethodDescriptor implements Descriptor{
-
+public class MethodDescriptor extends Descriptor{
+    public MethodDescriptor(String symName){
+        super(symName);
+    }
 }

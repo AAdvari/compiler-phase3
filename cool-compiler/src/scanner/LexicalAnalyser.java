@@ -422,7 +422,8 @@ public class LexicalAnalyser implements Lexical {
     public Symbol currentSymbol;
             public String nextToken(){
                 try{
-                    currentSymbol = next();
+
+                    Symbol current =  currentSymbol = next();
                     if(logSymbols)
                         System.out.println(current);
                     if (current == null)
