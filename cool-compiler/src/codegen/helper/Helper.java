@@ -1,8 +1,5 @@
 package codegen.helper;
-
 import codegen.dscp.*;
-
-import java.util.Map;
 
 public class Helper {
     public StringBuilder generatedCode;
@@ -43,6 +40,7 @@ public class Helper {
         else
             generatedCode.append("\n\t\t");
     }
+
     private String allocateMemoryForArrays(ArrayDescriptor arrayDescriptor){
         if (arrayDescriptor.elementType instanceof PrimitiveDescriptor)
             return allocateMemoryForPrimitiveArrays(arrayDescriptor);
