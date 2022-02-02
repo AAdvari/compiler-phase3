@@ -5,7 +5,6 @@ import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
 import scanner.TokenType;
 import scanner.Symbol;
-
 import java.util.*;
 
 public class CodeGeneratorImpl implements CodeGenerator {
@@ -15,6 +14,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public Helper helper;
     public ClassDescriptor currentClass;
     public MethodDescriptor currentMethod;
+
     public Map<String, Descriptor> globalDescriptors;
     public ArrayList<Descriptor> objectDescriptors;
 
@@ -133,6 +133,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void declareArray() {
         Descriptor arrayElementTypeDescriptor = semanticStack.peek();
         String creatingArrayName = scanner.currentSymbol.getToken();
+        if (currentMethod == null) {
+            addFieldToClass(arrayElementTypeDescriptor);
+            return;
+        }
 
         if (isDeclaredToken(creatingArrayName))
             throw new Error("Identifier is declared before!");
@@ -149,17 +153,19 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void declareObject(ObjectDescriptor od) {
 
     }
-
     public void addFieldToClass(Descriptor descriptor) {
 
     }
+    public void addArrayFieldToClass(Descriptor elementTypeDescriptor){
 
+    }
     private final ArrayList<TokenType> constantTypes =
             new ArrayList<>(Arrays.asList(TokenType.REAL, TokenType.INTEGER, TokenType.STRING));
 
     public void push() {
         String symName = scanner.currentSymbol.getToken();
         TokenType tokenType = scanner.currentSymbol.getType();
+
         if (constantTypes.contains(tokenType)) {
             push_constant(symName, tokenType);
             return;
@@ -179,8 +185,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
         } else
             throw new Error("Literal"+ symName + " is not declared within current scope!");
     }
-
     public void push_constant(String token, TokenType type) {
+
         if (globalDescriptors.containsKey(token)) {
             semanticStack.push(globalDescriptors.get(token));
             return;
@@ -197,11 +203,12 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case STRING:
                 constantType = PrimitiveType.STRING_PRIMITIVE;
                 break;
+            default:
+                throw new Error("Not a valid constant type");
         }
-        globalDescriptors.put(token, new PrimitiveDescriptor(token,
-                helper.allocateConstantMemoryAndSet(token, constantType),  ))
+        String address = helper.allocateConstantMemoryAndSet(token, constantType);
+        globalDescriptors.put(token, new PrimitiveDescriptor(token, address, constantType));
     }
-
     public void add() {
         System.out.println("Adding");
         System.out.println(scanner.currentSymbol);
