@@ -98,6 +98,20 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
     }
 
+    private String stringTypeOfPrimitiveType(PrimitiveType pt){
+        String type;
+        if (pt == PrimitiveType.INTEGER_PRIMITIVE)
+            type = "int";
+        else if(pt == PrimitiveType.REAL_PRIMITIVE)
+            type = "real";
+        else if(pt == PrimitiveType.STRING_PRIMITIVE)
+            type = "string";
+        else if (pt == PrimitiveType.BOOLEAN_PRIMITIVE)
+            type = "bool";
+        else
+            throw new Error("Not a valid type!");
+        return type;
+    }
     public void declarePrimitiveVariable(PrimitiveDescriptor pd) {
         Symbol currentSymbol = scanner.currentSymbol;
         String token = currentSymbol.getToken();
@@ -106,17 +120,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         || currentMethod.symTable.containsKey(token))
             throw new Error("Identifier " + token + " has been declared before!");
 
-        String type;
-        if (pd.type == PrimitiveType.INTEGER_PRIMITIVE)
-            type = "int";
-        else if(pd.type == PrimitiveType.REAL_PRIMITIVE)
-            type = "real";
-        else if(pd.type == PrimitiveType.STRING_PRIMITIVE)
-            type = "string";
-        else if (pd.type == PrimitiveType.BOOLEAN_PRIMITIVE)
-            type = "bool";
-        else
-            throw new Error("Not a valid type!");
+        String type = stringTypeOfPrimitiveType(pd.type);
 
         String address = helper.allocateMemory(globalDescriptors.get(type));
         PrimitiveDescriptor creatingVarDescriptor =
@@ -181,26 +185,21 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(globalDescriptors.get(token));
             return;
         }
+
+        PrimitiveType constantType;
         switch (type) {
             case INTEGER:
-                globalDescriptors.put(
-                        token,
-                        new PrimitiveDescriptor(token,
-                                helper.allocateMemory(globalDescriptors.get("int"))
-                                , PrimitiveType.INTEGER_PRIMITIVE)
-                );
+                constantType = PrimitiveType.INTEGER_PRIMITIVE;
                 break;
             case REAL:
-                globalDescriptors.put(
-                        token,
-                        new PrimitiveDescriptor(token,
-                                helper.allocateMemory(globalDescriptors.get("real")),
-                                PrimitiveType.REAL_PRIMITIVE)
-                );
+                constantType = PrimitiveType.REAL_PRIMITIVE;
                 break;
             case STRING:
-
+                constantType = PrimitiveType.STRING_PRIMITIVE;
+                break;
         }
+        globalDescriptors.put(token, new PrimitiveDescriptor(token,
+                helper.allocateConstantMemoryAndSet(token, constantType),  ))
     }
 
     public void add() {
