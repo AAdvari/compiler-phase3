@@ -11,4 +11,8 @@ public class MethodDescriptor extends Descriptor{
         this.symTable = new TreeMap<>(String::compareTo);
         this.parentClass = parent;
     }
+
+    public void addVariable(String name, Descriptor descriptor){
+        this.symTable.put(name, descriptor);
+    }
 }

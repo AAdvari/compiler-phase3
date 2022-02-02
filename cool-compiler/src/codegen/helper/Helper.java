@@ -2,6 +2,7 @@ package codegen.helper;
 
 import codegen.dscp.Descriptor;
 import codegen.dscp.PrimitiveDescriptor;
+import codegen.dscp.PrimitiveType;
 
 public class Helper {
     public StringBuilder generatedCode;
@@ -20,11 +21,17 @@ public class Helper {
         if(type instanceof PrimitiveDescriptor){
             return allocatePrimitiveMemory((PrimitiveDescriptor) type);
         }
+
+
         // TODO : Implement memory allocation for Object and Array Types.
         else
             return null;
     }
-    public String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor){
+    public String allocateConstantMemoryAndSet(String token, PrimitiveType pt){
+        // TODO : Implement the fucntion.
+        return "";
+    }
+    private String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor){
         switch (primitiveDescriptor.type){
             case INTEGER_PRIMITIVE:
                 currentAddress++;
@@ -34,8 +41,6 @@ public class Helper {
                 currentAddress++;
                 dataCode.append("adr").append(currentAddress).append(": .double 0");
                 break;
-            case STRING_PRIMITIVE:
-                dataCode.append("adr").append(currentAddress).append(": .ascii x");
             case BOOLEAN_PRIMITIVE:
                 break;
             default:

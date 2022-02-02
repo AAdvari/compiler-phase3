@@ -213,8 +213,8 @@
         "isFinal": false
       },
       {
-        "x": 977.0,
-        "y": 375.0,
+        "x": 992.0,
+        "y": 418.0,
         "id": 14,
         "isFinal": false
       },
@@ -231,8 +231,8 @@
         "isFinal": false
       },
       {
-        "x": 1052.5,
-        "y": 257.0,
+        "x": 1079.5,
+        "y": 218.0,
         "id": 17,
         "isFinal": false
       },
@@ -247,11 +247,11 @@
       {
         "start": 8,
         "end": 14,
-        "token": "ID",
-        "func": "",
-        "anchorX": 894.5,
-        "anchorY": 305.5,
-        "isGraph": true,
+        "token": "id",
+        "func": "var_dcl",
+        "anchorX": 864.5,
+        "anchorY": 293.5,
+        "isGraph": false,
         "isGlobal": false
       },
       {
@@ -259,8 +259,8 @@
         "end": 10,
         "token": "comma",
         "func": "",
-        "anchorX": 1158.5,
-        "anchorY": 623.5,
+        "anchorX": 1232.5,
+        "anchorY": 570.5,
         "isGraph": false,
         "isGlobal": false
       },
@@ -268,7 +268,7 @@
         "start": 9,
         "end": 18,
         "token": ";",
-        "func": "array_dcl",
+        "func": "pop",
         "anchorX": 1134.0,
         "anchorY": 476.5,
         "isGraph": false,
@@ -277,18 +277,18 @@
       {
         "start": 10,
         "end": 9,
-        "token": "ID",
-        "func": "",
+        "token": "id",
+        "func": "array_dcl",
         "anchorX": 1127.5,
         "anchorY": 660.5,
-        "isGraph": true,
+        "isGraph": false,
         "isGlobal": false
       },
       {
         "start": 11,
         "end": 12,
         "token": "let",
-        "func": "indcl",
+        "func": "",
         "anchorX": 546.25,
         "anchorY": 382.0,
         "isGraph": false,
@@ -308,7 +308,7 @@
         "start": 12,
         "end": 8,
         "token": "void",
-        "func": "",
+        "func": "push",
         "anchorX": 728.0,
         "anchorY": 307.75,
         "isGraph": false,
@@ -317,11 +317,11 @@
       {
         "start": 13,
         "end": 14,
-        "token": "ID",
-        "func": "",
-        "anchorX": 901.75,
-        "anchorY": 373.5,
-        "isGraph": true,
+        "token": "id",
+        "func": "var_dcl",
+        "anchorX": 874.75,
+        "anchorY": 406.5,
+        "isGraph": false,
         "isGlobal": false
       },
       {
@@ -339,8 +339,8 @@
         "end": 17,
         "token": "comma",
         "func": "",
-        "anchorX": 1014.75,
-        "anchorY": 316.0,
+        "anchorX": 1093.75,
+        "anchorY": 311.0,
         "isGraph": false,
         "isGlobal": false
       },
@@ -348,7 +348,7 @@
         "start": 14,
         "end": 18,
         "token": ";",
-        "func": "var_dcl",
+        "func": "pop",
         "anchorX": 1076.5,
         "anchorY": 378.0,
         "isGraph": false,
@@ -367,21 +367,21 @@
       {
         "start": 16,
         "end": 9,
-        "token": "ID",
-        "func": "",
-        "anchorX": 1008.5,
-        "anchorY": 585.25,
-        "isGraph": true,
+        "token": "id",
+        "func": "array_dcl",
+        "anchorX": 989.5,
+        "anchorY": 647.25,
+        "isGraph": false,
         "isGlobal": false
       },
       {
         "start": 17,
         "end": 14,
-        "token": "ID",
-        "func": "",
-        "anchorX": 957.25,
-        "anchorY": 285.5,
-        "isGraph": true,
+        "token": "id",
+        "func": "var_dcl",
+        "anchorX": 970.25,
+        "anchorY": 257.5,
+        "isGraph": false,
         "isGlobal": false
       }
     ],
