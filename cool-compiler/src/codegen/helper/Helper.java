@@ -1,8 +1,8 @@
 package codegen.helper;
 
-import codegen.dscp.Descriptor;
-import codegen.dscp.PrimitiveDescriptor;
-import codegen.dscp.PrimitiveType;
+import codegen.dscp.*;
+
+import java.util.Map;
 
 public class Helper {
     public StringBuilder generatedCode;
@@ -18,17 +18,42 @@ public class Helper {
     }
 
     public String allocateMemory(Descriptor type){
+        if (type == null)
+            throw new Error("allocation for null descriptor!");
+
         if(type instanceof PrimitiveDescriptor){
             return allocatePrimitiveMemory((PrimitiveDescriptor) type);
         }
+        if (type instanceof ArrayDescriptor) {
+            return allocateMemoryForArrays((ArrayDescriptor) type);
+        }
 
-
-        // TODO : Implement memory allocation for Object and Array Types.
-        else
+        else {
             return null;
+        }
     }
     public String allocateConstantMemoryAndSet(String token, PrimitiveType pt){
         // TODO : Implement the function.
+        return "";
+    }
+
+    private void addWhiteSpace(boolean toDataCode){
+        if (toDataCode)
+            dataCode.append("\n\t\t");
+        else
+            generatedCode.append("\n\t\t");
+    }
+    private String allocateMemoryForArrays(ArrayDescriptor arrayDescriptor){
+        if (arrayDescriptor.elementType instanceof PrimitiveDescriptor)
+            return allocateMemoryForPrimitiveArrays(arrayDescriptor);
+        else if (arrayDescriptor.elementType instanceof ObjectDescriptor)
+            return allocateMemoryForObjectiveArrays(arrayDescriptor);
+        throw new Error("Invalid Element Type For Array!");
+    }
+    private String allocateMemoryForPrimitiveArrays(ArrayDescriptor arrayDescriptor){
+        return "";
+    }
+    private String allocateMemoryForObjectiveArrays(ArrayDescriptor arrayDescriptor){
         return "";
     }
     private String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor){
@@ -48,13 +73,6 @@ public class Helper {
         }
 
         return "";
-    }
-
-    public void addWhiteSpace(boolean toDataCode){
-        if (toDataCode)
-            dataCode.append("\n\t\t");
-        else
-            generatedCode.append("\n\t\t");
     }
 
 

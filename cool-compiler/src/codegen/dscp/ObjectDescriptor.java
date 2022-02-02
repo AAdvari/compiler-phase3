@@ -1,12 +1,13 @@
 package codegen.dscp;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ObjectDescriptor extends Descriptor{
-    public ArrayList<Descriptor> attributes;
+    public Map<String, Descriptor> attributes;
     public ClassDescriptor relatedClass;
     public ObjectDescriptor(String symName, ClassDescriptor relatedClass){
         super(symName);
-        this.attributes = new ArrayList<>();
+        this.attributes = new TreeMap<>(String::compareTo);
         this.relatedClass = relatedClass;
     }
 }
