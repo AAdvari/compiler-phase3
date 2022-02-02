@@ -3,7 +3,7 @@ package codegen.dscp;
 public class ArrayDescriptor extends Descriptor{
     public Descriptor elementType;
     private String startAddress;
-    private int elementSize;
+    private int size;
     public ArrayDescriptor(String symName, Descriptor elementType){
         super(symName);
         if (!(elementType instanceof PrimitiveDescriptor))
@@ -20,11 +20,19 @@ public class ArrayDescriptor extends Descriptor{
         this.startAddress = startAddress;
     }
 
-    public int getElementSize() {
-        return elementSize;
+    public int getSize() {
+        return size;
     }
 
-    public void setElementSize(int elementSize) {
-        this.elementSize = elementSize;
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public Descriptor getElementType() {
+        return elementType;
+    }
+
+    public void setElementType(Descriptor elementType) {
+        this.elementType = elementType;
     }
 }

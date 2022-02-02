@@ -122,7 +122,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         String type = stringTypeOfPrimitiveType(pd.type);
 
-        String address = helper.allocateMemory(globalDescriptors.get(type));
+        String address = helper.allocateMemory(globalDescriptors.get(type), String.valueOf(0));
         PrimitiveDescriptor creatingVarDescriptor =
                 new PrimitiveDescriptor(token, address, pd.type);
         currentMethod.addVariable(token, creatingVarDescriptor);
@@ -159,9 +159,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void addArrayFieldToClass(Descriptor elementTypeDescriptor){
 
     }
+
+
     private final ArrayList<TokenType> constantTypes =
             new ArrayList<>(Arrays.asList(TokenType.REAL, TokenType.INTEGER, TokenType.STRING));
-
     public void push() {
         String symName = scanner.currentSymbol.getToken();
         TokenType tokenType = scanner.currentSymbol.getType();
@@ -206,8 +207,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
             default:
                 throw new Error("Not a valid constant type");
         }
-        String address = helper.allocateConstantMemoryAndSet(token, constantType);
-        globalDescriptors.put(token, new PrimitiveDescriptor(token, address, constantType));
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(token, "address", constantType);
+        pd.address = helper.allocateMemory(pd, token);
+
+        globalDescriptors.put(token, pd);
     }
     public void add() {
         System.out.println("Adding");

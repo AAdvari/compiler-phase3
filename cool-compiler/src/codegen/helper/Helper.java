@@ -13,26 +13,56 @@ public class Helper {
         dataCode = new StringBuilder();
         currentAddress = -1;
     }
-
-    public String allocateMemory(Descriptor type){
+    // Allocations :
+    public String allocateMemory(Descriptor type, String... value){
         if (type == null)
             throw new Error("allocation for null descriptor!");
 
         if(type instanceof PrimitiveDescriptor){
-            return allocatePrimitiveMemory((PrimitiveDescriptor) type);
+            return allocatePrimitiveMemory((PrimitiveDescriptor) type, 1, value);
         }
         if (type instanceof ArrayDescriptor) {
-            return allocateMemoryForArrays((ArrayDescriptor) type);
+            ArrayDescriptor ad = (ArrayDescriptor) type;
+            if (ad.getElementType() instanceof PrimitiveDescriptor)
+                return allocatePrimitiveMemory((PrimitiveDescriptor) ad.getElementType(), ad.getSize(), value);
+            else
+                return allocateObjectMemory((ObjectDescriptor) ad.getElementType() , ad.getSize(), value);
         }
 
         else {
             return null;
         }
     }
-    public String allocateConstantMemoryAndSet(String token, PrimitiveType pt){
-        // TODO : Implement the function.
+    private String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor, int count, String... value){
+        switch (primitiveDescriptor.type){
+            case INTEGER_PRIMITIVE:
+            case BOOLEAN_PRIMITIVE:
+                currentAddress++;
+                dataCode.append("adr").append(currentAddress).append(": .word ").append(value[0]);
+                for (int i = 1; i < count; i++) {
+                    dataCode.append(",").append(value[i]);
+                }
+                addWhiteSpace(true);
+                break;
+            case REAL_PRIMITIVE:
+                currentAddress++;
+                dataCode.append("adr").append(currentAddress).append(": .float ").append(value[0]);
+                for (int i = 0; i < count - 1; i++) {
+                    dataCode.append(",").append(value[i]);
+                }
+                addWhiteSpace(true);
+                break;
+            default:
+                throw new Error("undefined primitive type!");
+        }
+
+        return "adr"+currentAddress;
+    }
+    private String allocateObjectMemory(ObjectDescriptor objectDescriptor, int count, String... value){
         return "";
     }
+
+    // Assignments :
 
     private void addWhiteSpace(boolean toDataCode){
         if (toDataCode)
@@ -40,39 +70,6 @@ public class Helper {
         else
             generatedCode.append("\n\t\t");
     }
-
-    private String allocateMemoryForArrays(ArrayDescriptor arrayDescriptor){
-        if (arrayDescriptor.elementType instanceof PrimitiveDescriptor)
-            return allocateMemoryForPrimitiveArrays(arrayDescriptor);
-        else if (arrayDescriptor.elementType instanceof ObjectDescriptor)
-            return allocateMemoryForObjectiveArrays(arrayDescriptor);
-        throw new Error("Invalid Element Type For Array!");
-    }
-    private String allocateMemoryForPrimitiveArrays(ArrayDescriptor arrayDescriptor){
-        return "";
-    }
-    private String allocateMemoryForObjectiveArrays(ArrayDescriptor arrayDescriptor){
-        return "";
-    }
-    private String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor){
-        switch (primitiveDescriptor.type){
-            case INTEGER_PRIMITIVE:
-                currentAddress++;
-                dataCode.append("adr").append(currentAddress).append(": .word 0");
-                break;
-            case REAL_PRIMITIVE:
-                currentAddress++;
-                dataCode.append("adr").append(currentAddress).append(": .double 0");
-                break;
-            case BOOLEAN_PRIMITIVE:
-                break;
-            default:
-                throw new Error("undefined primitive type!");
-        }
-
-        return "";
-    }
-
 
 
 }
