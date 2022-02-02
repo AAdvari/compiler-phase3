@@ -64,6 +64,11 @@ public class Helper {
 
     // Assignments :
 
+    public void assignSecondToFirst(){}
+
+
+
+    // utils :
     private void addWhiteSpace(boolean toDataCode){
         if (toDataCode)
             dataCode.append("\n\t\t");

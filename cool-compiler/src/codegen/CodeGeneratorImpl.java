@@ -76,9 +76,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         }
     }
 
+
+
+    // Regular Semantics:
     public void traceObject() {
     }
-
     public void declareVariable() {
         Descriptor descriptor = semanticStack.peek();
         if (currentMethod == null) {
@@ -97,21 +99,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         throw new Error("Variable can't be instantiated");
 
     }
-
-    private String stringTypeOfPrimitiveType(PrimitiveType pt){
-        String type;
-        if (pt == PrimitiveType.INTEGER_PRIMITIVE)
-            type = "int";
-        else if(pt == PrimitiveType.REAL_PRIMITIVE)
-            type = "real";
-        else if(pt == PrimitiveType.STRING_PRIMITIVE)
-            type = "string";
-        else if (pt == PrimitiveType.BOOLEAN_PRIMITIVE)
-            type = "bool";
-        else
-            throw new Error("Not a valid type!");
-        return type;
-    }
     public void declarePrimitiveVariable(PrimitiveDescriptor pd) {
         Symbol currentSymbol = scanner.currentSymbol;
         String token = currentSymbol.getToken();
@@ -128,8 +115,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
         currentMethod.addVariable(token, creatingVarDescriptor);
     }
 
-    // We cannot specify memory for arrays in declaration,
-    // allocating memory is done in assignment section for arrays.
+    /** We cannot specify memory for arrays in declaration,
+       allocating memory is done in assignment section for arrays.
+
+     */
     public void declareArray() {
         Descriptor arrayElementTypeDescriptor = semanticStack.peek();
         String creatingArrayName = scanner.currentSymbol.getToken();
@@ -144,12 +133,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         ArrayDescriptor arrayDescriptor = new ArrayDescriptor(creatingArrayName,arrayElementTypeDescriptor);
         currentMethod.addVariable(creatingArrayName, arrayDescriptor);
     }
-
-    private boolean isDeclaredToken(String token){
-        return (currentMethod.symTable.containsKey(token) ||
-                globalDescriptors.containsKey(token));
-    }
-
     public void declareObject(ObjectDescriptor od) {
 
     }
@@ -159,10 +142,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void addArrayFieldToClass(Descriptor elementTypeDescriptor){
 
     }
-
-
-    private final ArrayList<TokenType> constantTypes =
-            new ArrayList<>(Arrays.asList(TokenType.REAL, TokenType.INTEGER, TokenType.STRING));
     public void push() {
         String symName = scanner.currentSymbol.getToken();
         TokenType tokenType = scanner.currentSymbol.getType();
@@ -212,12 +191,39 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         globalDescriptors.put(token, pd);
     }
+
+    // Mathematical Semantics:
     public void add() {
         System.out.println("Adding");
         System.out.println(scanner.currentSymbol);
     }
-
     public void subtract() {
 
     }
+
+
+
+    // utils:
+    private String stringTypeOfPrimitiveType(PrimitiveType pt){
+        String type;
+        if (pt == PrimitiveType.INTEGER_PRIMITIVE)
+            type = "int";
+        else if(pt == PrimitiveType.REAL_PRIMITIVE)
+            type = "real";
+        else if(pt == PrimitiveType.STRING_PRIMITIVE)
+            type = "string";
+        else if (pt == PrimitiveType.BOOLEAN_PRIMITIVE)
+            type = "bool";
+        else
+            throw new Error("Not a valid type!");
+        return type;
+    }
+    private final ArrayList<TokenType> constantTypes =
+            new ArrayList<>(Arrays.asList(TokenType.REAL, TokenType.INTEGER, TokenType.STRING));
+    private boolean isDeclaredToken(String token){
+        return (currentMethod.symTable.containsKey(token) ||
+                globalDescriptors.containsKey(token));
+    }
+
+
 }

@@ -8,7 +8,8 @@ public class ArrayDescriptor extends Descriptor{
         super(symName);
         if (!(elementType instanceof PrimitiveDescriptor))
             throw new Error("Creating Array of non-primitives are not supported yet");
-
+        startAddress = "";
+        size = -1;
         this.elementType = elementType;
     }
 
