@@ -197,9 +197,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case STRING:
                 constantType = PrimitiveType.STRING_PRIMITIVE;
                 break;
+            default:
+                throw new Error("Not a valid constant type");
         }
-        globalDescriptors.put(token, new PrimitiveDescriptor(token,
-                helper.allocateConstantMemoryAndSet(token, constantType),  ))
+        String address = helper.allocateConstantMemoryAndSet(token, constantType);
+        globalDescriptors.put(token, new PrimitiveDescriptor(token, address, constantType));
     }
 
     public void add() {

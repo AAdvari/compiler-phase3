@@ -28,7 +28,7 @@ public class Helper {
             return null;
     }
     public String allocateConstantMemoryAndSet(String token, PrimitiveType pt){
-        // TODO : Implement the fucntion.
+        // TODO : Implement the function.
         return "";
     }
     private String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor){
