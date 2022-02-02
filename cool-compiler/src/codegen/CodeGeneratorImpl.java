@@ -124,9 +124,22 @@ public class CodeGeneratorImpl implements CodeGenerator {
         currentMethod.addVariable(token, creatingVarDescriptor);
     }
 
-
+    // We cannot specify memory for arrays in declaration,
+    // allocating memory is done in assignment section for arrays.
     public void declareArray() {
+        Descriptor arrayElementTypeDescriptor = semanticStack.peek();
+        String creatingArrayName = scanner.currentSymbol.getToken();
 
+        if (isDeclaredToken(creatingArrayName))
+            throw new Error("Identifier is declared before!");
+
+        ArrayDescriptor arrayDescriptor = new ArrayDescriptor(creatingArrayName,arrayElementTypeDescriptor);
+        currentMethod.addVariable(creatingArrayName, arrayDescriptor);
+    }
+
+    private boolean isDeclaredToken(String token){
+        return (currentMethod.symTable.containsKey(token) ||
+                globalDescriptors.containsKey(token));
     }
 
     public void declareObject(ObjectDescriptor od) {
