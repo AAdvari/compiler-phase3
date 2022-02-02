@@ -101,25 +101,33 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void declarePrimitiveVariable(PrimitiveDescriptor pd) {
         Symbol currentSymbol = scanner.currentSymbol;
         String token = currentSymbol.getToken();
-        TokenType symType = currentSymbol.getType();
 
-        PrimitiveType type;
-        if (symType == TokenType.INTEGER)
-            type = PrimitiveType.INTEGER_PRIMITIVE;
-        else if (symType == TokenType.REAL)
-            type = PrimitiveType.REAL_PRIMITIVE;
-        else if (symType == TokenType.STRING)
-            type = PrimitiveType.STRING_PRIMITIVE;
-        else if (token.equals("false") || token.equals("true"))
-            type = PrimitiveType.BOOLEAN_PRIMITIVE;
+        if (globalDescriptors.containsKey(token)
+        || currentMethod.symTable.containsKey(token))
+            throw new Error("Identifier " + token + " has been declared before!");
+
+        String type;
+        if (pd.type == PrimitiveType.INTEGER_PRIMITIVE)
+            type = "int";
+        else if(pd.type == PrimitiveType.REAL_PRIMITIVE)
+            type = "real";
+        else if(pd.type == PrimitiveType.STRING_PRIMITIVE)
+            type = "string";
+        else if (pd.type == PrimitiveType.BOOLEAN_PRIMITIVE)
+            type = "bool";
         else
-            throw new Error("Not a valid primitive type");
-        PrimitiveDescriptor currentVarDescriptor =
-                new PrimitiveDescriptor(token, helper.allocateMemory(pd), type);
-        currentMethod.addVariable(token, currentVarDescriptor);
+            throw new Error("Not a valid type!");
 
+        String address = helper.allocateMemory(globalDescriptors.get(type));
+        PrimitiveDescriptor creatingVarDescriptor =
+                new PrimitiveDescriptor(token, address, pd.type);
+        currentMethod.addVariable(token, creatingVarDescriptor);
     }
 
+
+    public void declareArray() {
+
+    }
 
     public void declareObject(ObjectDescriptor od) {
 
@@ -127,9 +135,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
     public void addFieldToClass(Descriptor descriptor) {
 
-    }
-
-    public void declareArray() {
     }
 
     private final ArrayList<TokenType> constantTypes =
