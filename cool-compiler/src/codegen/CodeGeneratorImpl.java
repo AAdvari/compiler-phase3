@@ -165,12 +165,15 @@ public class CodeGeneratorImpl implements CodeGenerator {
             Descriptor descriptor = currentMethod.symTable.get(symName);
             semanticStack.push(descriptor);
 
-        } else if (currentClass.fields.containsKey(symName)) {
-            // TODO : Implement Pushing For Class Attributes
-            System.out.println("Pushing thing is a field!");
+        } else if(globalDescriptors.containsKey(symName)){
+            Descriptor descriptor = globalDescriptors.get(symName);
+            semanticStack.push(descriptor);
+        }
+        else if (currentClass.fields.containsKey(symName)) {
+            System.out.println("Pushing Class Fields is not implemented yet");
 
         } else
-            throw new Error("Literal is not declared within current scope!");
+            throw new Error("Literal"+ symName + " is not declared within current scope!");
     }
 
     public void push_constant(String token, TokenType type) {
