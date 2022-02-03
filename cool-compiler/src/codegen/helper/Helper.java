@@ -18,11 +18,22 @@ public class Helper {
         currentAddress = -1;
         this.codeGen = codeGen;
         initDataCode();
+        initGeneratedCode();
     }
     private void initDataCode(){
+        dataCode.append(".data");
+        addWhiteSpace(true);
         dataCode.append("inputBuffer: .space 20");
         addWhiteSpace(true);
+        dataCode.append("outOfBoundException: .asciiz \"Array Index Out Of Bounds\"");
+        addWhiteSpace(true);
+
     }
+    private void initGeneratedCode(){
+        generatedCode.append(".text\n.globl main\nmain:");
+        addWhiteSpace(false);
+    }
+
     // Allocations :
     public String allocateMemory(Descriptor type, String... value){
         if (type == null)
@@ -38,9 +49,8 @@ public class Helper {
             else
                 return allocateObjectMemory((ObjectDescriptor) ad.getElementType() , ad.getSize(), value);
         }
-
         else {
-            return null;
+            throw new Error("Memory Allocation for this kind of descriptor is not supported.");
         }
     }
     private String allocatePrimitiveMemory(PrimitiveDescriptor primitiveDescriptor, int count, String... value){
@@ -91,14 +101,28 @@ public class Helper {
         writeCommand("la", "$a0", allocatedMemoryAddress);
         writeCommand("li", "$a1", "20");
         writeCommand("syscall");
-        pd.address = allocatedMemoryAddress;
+        pd.setAddress(allocatedMemoryAddress);
         return pd;
     }
     public PrimitiveDescriptor generateReadInt(){
-        return null;
+        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp","",PrimitiveType.INTEGER_PRIMITIVE);
+        String allocatedMemoryAddress = allocateMemory(pd);
+        writeComment(false, "Reading Integer");
+        writeCommand("li","$v0","5");
+        writeCommand("syscall");
+        writeCommand("sw", "$v0", allocatedMemoryAddress);
+        pd.setAddress(allocatedMemoryAddress);
+        return pd;
     }
     public PrimitiveDescriptor generateReadReal(){
-        return null;
+        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp", "", PrimitiveType.REAL_PRIMITIVE);
+        String allocatedMemoryAddress = allocateMemory(pd);
+        writeComment(false,"Reading Real");
+        writeCommand("li","$v0","6");
+        writeCommand("syscall");
+        writeCommand("s.s", "$f0", allocatedMemoryAddress);
+        pd.setAddress(allocatedMemoryAddress);
+        return pd;
     }
     public void assignAddressLabelsValues(String adr1, String adr2, PrimitiveType type){
         writeComment(false,"# Assigning "+ adr2 + "to"+ adr1 + "Type: " + type);
@@ -116,14 +140,14 @@ public class Helper {
 
 
     // utils :
-    private void writeCommand(String...literals){
+    public void writeCommand(String...literals){
         generatedCode.append(literals[0]).append(" ");
         for (int i = 1; i < literals.length ; i++) {
             generatedCode.append(",").append(literals[i]);
         }
         addWhiteSpace(false);
     }
-    private void writeComment(boolean toDataCode, String comment){
+    public void writeComment(boolean toDataCode, String comment){
         if (toDataCode){
             dataCode.append("#").append(comment);
             addWhiteSpace(true);
@@ -133,7 +157,7 @@ public class Helper {
             addWhiteSpace(false);
         }
     }
-    private void addWhiteSpace(boolean toDataCode){
+    public void addWhiteSpace(boolean toDataCode){
         if (toDataCode)
             dataCode.append("\n\t\t");
         else
