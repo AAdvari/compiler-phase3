@@ -11,6 +11,7 @@ public class Helper {
 
     private CodeGeneratorImpl codeGen;
     private int currentAddress;
+    private int currentLabel = 0;
 
     public Helper(CodeGeneratorImpl codeGen){
         generatedCode = new StringBuilder();
@@ -165,4 +166,12 @@ public class Helper {
     }
 
 
+    public String allocateConstantMemoryAndSet(String token, PrimitiveType constantType) {
+        return null;
+    }
+    private String labelMaker() {
+        String s = "label" + currentLabel;
+        currentLabel++;
+        return  s;
+    }
 }

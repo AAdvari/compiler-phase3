@@ -5,7 +5,6 @@ import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
 import scanner.TokenType;
 import scanner.Symbol;
-
 import java.util.*;
 
 public class CodeGeneratorImpl implements CodeGenerator {
@@ -24,9 +23,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         semanticStack = new Stack<>();
         helper = new Helper(this);
         globalDescriptors = new TreeMap<>(String::compareTo);
-
-        // TODO : Added for testing purposes : remove after implementing methods
-        currentMethod = new MethodDescriptor("main", new ClassDescriptor("Main"));
     }
 
     @Override
@@ -35,12 +31,15 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "push":
                 push();
                 break;
+
             case "add":
                 add();
                 break;
+
             case "subtract":
                 subtract();
                 break;
+
             case "multiply":
             case "divide":
             case "mod":
@@ -68,28 +67,27 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 read_real();
                 break;
             case "left_array_index":
-                left_array_index();
-                break;
+
             case "array_index":
                 array_index();
                 break;
             case "trace_object":
                 traceObject();
                 break;
+
             case "pop":
                 semanticStack.pop();
                 break;
+
             case "var_dcl":
                 declareVariable();
                 break;
+
             case "array_dcl":
                 declareArray();
                 break;
             case "array_dcl_complete":
                 arrayDclComplete();
-                break;
-            case "assign":
-                assign();
                 break;
 
         }
@@ -102,11 +100,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
     private void declareVariable() {
         Descriptor descriptor = semanticStack.peek();
-        // TODO : Commented for testing purposes : uncomment after implementing methods.
-//        if (currentMethod == null) {
-//            addFieldToClass(descriptor);
-//            return;
-//        }
+        if (currentMethod == null) {
+            addFieldToClass(descriptor);
+            return;
+        }
         if (descriptor instanceof PrimitiveDescriptor) {
             declarePrimitiveVariable((PrimitiveDescriptor) descriptor);
             return;
@@ -222,53 +219,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
-    private void array_index(){
-        Descriptor index = semanticStack.pop();
-        Descriptor array = semanticStack.pop();
+    private void array_index(){}
+    private void left_array_index(){}
 
-        ArrayDescriptor arrayDescriptor = (ArrayDescriptor) array;
-        PrimitiveDescriptor indexPd = (PrimitiveDescriptor) index;
 
-        if (indexPd.type != PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("Indices must be integers.");
-
-        PrimitiveDescriptor element = new PrimitiveDescriptor("$temp", "",
-                ((PrimitiveDescriptor)arrayDescriptor.getElementType()).type);
-        String address = helper.allocateMemory(element);
-        element.setAddress(address);
-
-        helper.writeComment(false,"# Extract element from array");
-        helper.writeCommand("lw", "$t6", indexPd.getAddress());
-        helper.writeCommand("add", "$t6","$t6","$t6");
-        helper.writeCommand("add", "$t6","$t6","$t6");
-
-        String command = element.type == PrimitiveType.REAL_PRIMITIVE ? "s.s" : "sw";
-        helper.writeCommand(command, arrayDescriptor.getStartAddress()+"($t6)", address);
-
-        semanticStack.push(element);
-    }
-    private void left_array_index(){
-
-        Descriptor index = semanticStack.pop();
-        Descriptor array = semanticStack.pop();
-
-        ArrayDescriptor arrayDescriptor = (ArrayDescriptor) array;
-        PrimitiveDescriptor indexPd = (PrimitiveDescriptor) index;
-
-        if (indexPd.type!= PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("Indices must be integers.");
-
-        PrimitiveDescriptor elementDSCP = (PrimitiveDescriptor) arrayDescriptor.elementType;
-
-        helper.writeComment(false,"# Left Array Index");
-        helper.writeCommand("lw", "$t7", indexPd.getAddress());
-        helper.writeCommand("add", "$t7","t7","t7");
-        helper.writeCommand("add", "$t7","t7","t7");
-
-        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp",
-                arrayDescriptor.getStartAddress()+"($t7)", elementDSCP.type);
-        semanticStack.push(pd);
-    }
     private void assign(){
         Descriptor right = semanticStack.pop();
         Descriptor left = semanticStack.pop();
@@ -358,6 +312,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
         return (currentMethod.symTable.containsKey(token) ||
                 globalDescriptors.containsKey(token));
     }
+
+
 
 
 }
