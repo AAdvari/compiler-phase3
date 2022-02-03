@@ -11,11 +11,12 @@ public class Helper {
 
     private CodeGeneratorImpl codeGen;
     private int currentAddress;
-
+    private int currentTemp;
     public Helper(CodeGeneratorImpl codeGen){
         generatedCode = new StringBuilder();
         dataCode = new StringBuilder();
         currentAddress = -1;
+        currentTemp = -1;
         this.codeGen = codeGen;
         initDataCode();
         initGeneratedCode();
@@ -32,6 +33,10 @@ public class Helper {
     private void initGeneratedCode(){
         generatedCode.append(".text\n.globl main\nmain:");
         addWhiteSpace(false);
+    }
+    public String getTempName(){
+        currentTemp++;
+        return "$temp"+currentTemp;
     }
 
     // Allocations :
@@ -58,17 +63,19 @@ public class Helper {
             case INTEGER_PRIMITIVE:
             case BOOLEAN_PRIMITIVE:
                 currentAddress++;
-                dataCode.append("adr").append(currentAddress).append(": .word ").append(value[0]);
+                dataCode.append("adr").append(currentAddress).append(": .word ")
+                        .append(value.length == 0 ? "0": value[0]);
                 for (int i = 1; i < count; i++) {
-                    dataCode.append(",").append(value[i]);
+                    dataCode.append(",").append(value.length == 0 ? "0" : value[i]);
                 }
                 addWhiteSpace(true);
                 break;
             case REAL_PRIMITIVE:
                 currentAddress++;
-                dataCode.append("adr").append(currentAddress).append(": .float ").append(value[0]);
+                dataCode.append("adr").append(currentAddress).append(": .float ")
+                        .append(value.length == 0 ? "0": value[0]);
                 for (int i = 0; i < count - 1; i++) {
-                    dataCode.append(",").append(value[i]);
+                    dataCode.append(",").append(value.length == 0 ? "0" : value[i]);
                 }
                 addWhiteSpace(true);
                 break;
@@ -94,7 +101,7 @@ public class Helper {
 
     // Assignments :
     public PrimitiveDescriptor generateReadString(){
-        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp", "", PrimitiveType.STRING_PRIMITIVE);
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(getTempName(), "", PrimitiveType.STRING_PRIMITIVE);
         String allocatedMemoryAddress =  allocateMemory(pd);
         writeComment(false,"Reading String");
         writeCommand("li", "$v0", "8" );
@@ -105,7 +112,7 @@ public class Helper {
         return pd;
     }
     public PrimitiveDescriptor generateReadInt(){
-        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp","",PrimitiveType.INTEGER_PRIMITIVE);
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(getTempName(),"",PrimitiveType.INTEGER_PRIMITIVE);
         String allocatedMemoryAddress = allocateMemory(pd);
         writeComment(false, "Reading Integer");
         writeCommand("li","$v0","5");
@@ -115,7 +122,7 @@ public class Helper {
         return pd;
     }
     public PrimitiveDescriptor generateReadReal(){
-        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp", "", PrimitiveType.REAL_PRIMITIVE);
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(getTempName(), "", PrimitiveType.REAL_PRIMITIVE);
         String allocatedMemoryAddress = allocateMemory(pd);
         writeComment(false,"Reading Real");
         writeCommand("li","$v0","6");
@@ -125,7 +132,7 @@ public class Helper {
         return pd;
     }
     public void assignAddressLabelsValues(String adr1, String adr2, PrimitiveType type){
-        writeComment(false,"# Assigning "+ adr2 + "to"+ adr1 + "Type: " + type);
+        writeComment(false,"# Assigning "+ adr2 + " to "+ adr1 + " Type: " + type);
         if (type == PrimitiveType.INTEGER_PRIMITIVE || type == PrimitiveType.BOOLEAN_PRIMITIVE){
             writeCommand("lw","$t6",adr2);
             writeCommand("sw","$t6",adr1);

@@ -36,9 +36,13 @@ public class Main {
 
         try{
             parser.parse();
-        } catch (Exception e){
+            System.out.println(codeGenerator.generateCode());
+
+        } catch (Error e){
             System.out.println(e.getMessage());
             System.out.println("Parser confronted with syntactical errors.");
+            System.out.println(codeGenerator.generateCode());
+
         }
     }
 }

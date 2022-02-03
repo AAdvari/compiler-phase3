@@ -19,14 +19,30 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public Map<String, Descriptor> globalDescriptors;
     public ArrayList<Descriptor> objectDescriptors;
 
+
     public CodeGeneratorImpl(LexicalAnalyser scanner) {
         this.scanner = scanner;
         semanticStack = new Stack<>();
         helper = new Helper(this);
         globalDescriptors = new TreeMap<>(String::compareTo);
-
+        seedGlobalDescriptors();
         // TODO : Added for testing purposes : remove after implementing methods
         currentMethod = new MethodDescriptor("main", new ClassDescriptor("Main"));
+    }
+
+    public StringBuilder generateCode(){
+        return helper.generatedCode.append('\n').append(helper.dataCode);
+    }
+    private void seedGlobalDescriptors(){
+        PrimitiveDescriptor real = new PrimitiveDescriptor("real", "", PrimitiveType.REAL_PRIMITIVE);
+        PrimitiveDescriptor integer = new PrimitiveDescriptor("int", "", PrimitiveType.INTEGER_PRIMITIVE);
+        PrimitiveDescriptor bool = new PrimitiveDescriptor("bool", "", PrimitiveType.BOOLEAN_PRIMITIVE);
+        PrimitiveDescriptor string = new PrimitiveDescriptor("string", "", PrimitiveType.STRING_PRIMITIVE);
+        globalDescriptors.put("real",real);
+        globalDescriptors.put("int",integer);
+        globalDescriptors.put("bool",bool);
+        globalDescriptors.put("string",string);
+        globalDescriptors.put("void", null);
     }
 
     @Override
@@ -91,6 +107,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "assign":
                 assign();
                 break;
+            case "cast":
+                cast();
+                break;
 
         }
     }
@@ -129,7 +148,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         String type = stringTypeOfPrimitiveType(pd.type);
 
-        String address = helper.allocateMemory(globalDescriptors.get(type), String.valueOf(0));
+        String address = helper.allocateMemory(globalDescriptors.get(type), "0");
         PrimitiveDescriptor creatingVarDescriptor =
                 new PrimitiveDescriptor(token, address, pd.type);
         currentMethod.addVariable(token, creatingVarDescriptor);
@@ -186,7 +205,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             throw new Error("Literal"+ symName + " is not declared within current scope!");
     }
     private void push_constant(String token, TokenType type) {
-
+        System.out.println("Push Constant Called: " + token);
         if (globalDescriptors.containsKey(token)) {
             semanticStack.push(globalDescriptors.get(token));
             return;
@@ -206,10 +225,12 @@ public class CodeGeneratorImpl implements CodeGenerator {
             default:
                 throw new Error("Not a valid constant type");
         }
-        PrimitiveDescriptor pd = new PrimitiveDescriptor(token, "constant", constantType);
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(token, "", constantType);
         pd.address = helper.allocateMemory(pd, token);
+        pd.activeIsConstant();
 
         globalDescriptors.put(token, pd);
+        semanticStack.push(pd);
     }
     private void read_int(){
         semanticStack.push(helper.generateReadInt());
@@ -232,7 +253,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (indexPd.type != PrimitiveType.INTEGER_PRIMITIVE)
             throw new Error("Indices must be integers.");
 
-        PrimitiveDescriptor element = new PrimitiveDescriptor("$temp", "",
+        PrimitiveDescriptor element = new PrimitiveDescriptor(helper.getTempName(), "",
                 ((PrimitiveDescriptor)arrayDescriptor.getElementType()).type);
         String address = helper.allocateMemory(element);
         element.setAddress(address);
@@ -265,7 +286,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("add", "$t7","t7","t7");
         helper.writeCommand("add", "$t7","t7","t7");
 
-        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp",
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(),
                 arrayDescriptor.getStartAddress()+"($t7)", elementDSCP.type);
         semanticStack.push(pd);
     }
@@ -285,7 +306,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             PrimitiveDescriptor leftPrimitive = (PrimitiveDescriptor) left;
             PrimitiveDescriptor rightPrimitive = (PrimitiveDescriptor) right;
             if (leftPrimitive.type == PrimitiveType.STRING_PRIMITIVE){
-                if (leftPrimitive.getAddress().equals("constant"))
+                if (leftPrimitive.isConstant())
                     throw new Error("Assignment to a constant!");
                 else {
                     leftPrimitive.setAddress(rightPrimitive.getAddress());
@@ -317,14 +338,84 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         // rightExpr has to be a constant PrimitiveDescriptor
         PrimitiveDescriptor rightExprPd = (PrimitiveDescriptor) rightExpr;
-        if (!rightExprPd.address.equals("constant"))
+        if (!rightExprPd.isConstant())
             throw new Error("Dynamic array size not supported!");
-        leftArray.setSize(Integer.parseInt(rightExpr.symName));
 
+        int size = Integer.parseInt(rightExpr.symName);
+        if (size <= 0)
+            throw new Error("Size of an array should be a natural number!");
+
+        leftArray.setSize(size);
+
+        System.out.println(Integer.parseInt(rightExpr.symName));
         String allocatedMemoryStart = helper.allocateMemory(leftArray);
+        System.out.println(allocatedMemoryStart);
         leftArray.setStartAddress(allocatedMemoryStart);
     }
+    private void cast(){
+        PrimitiveDescriptor expr = (PrimitiveDescriptor) semanticStack.pop();
+        PrimitiveDescriptor castType = (PrimitiveDescriptor) semanticStack.pop();
 
+        if (castType.type != PrimitiveType.INTEGER_PRIMITIVE && castType.type != PrimitiveType.REAL_PRIMITIVE)
+            throw new Error("Invalid Casting Type!");
+
+        if (castType.type == expr.type){
+            semanticStack.push(expr);
+            return;
+        }
+
+        PrimitiveDescriptor casted;
+        if (castType.type == PrimitiveType.INTEGER_PRIMITIVE){
+            if (expr.isConstant()){
+                int castedValue = Integer.parseInt(expr.symName);
+                casted = new PrimitiveDescriptor(String.valueOf(castedValue), "", PrimitiveType.INTEGER_PRIMITIVE);
+                String address = helper.allocateMemory(castType, String.valueOf(castedValue));
+                casted.activeIsConstant();
+                casted.setAddress(address);
+                semanticStack.push(casted);
+                globalDescriptors.put(String.valueOf(castedValue), casted);
+            }
+            else {
+                casted = new PrimitiveDescriptor(helper.getTempName(),"", PrimitiveType.INTEGER_PRIMITIVE);
+                String addressForCasted = helper.allocateMemory(casted);
+                casted.setAddress(addressForCasted);
+
+                String exprAddress = expr.getAddress();
+                helper.writeComment(false,"Casting float to integer");
+                helper.writeCommand("l.s", "$f2",exprAddress);
+                helper.writeCommand("cvt.w.s","$f2","$f2");
+                helper.writeCommand("mfc1","$t2","$f2");
+                helper.writeCommand("sw", "$t2", addressForCasted);
+                semanticStack.push(casted);
+            }
+        }
+        else {
+            if (expr.isConstant()){
+                float castedValue = Float.parseFloat(expr.symName);
+                casted = new PrimitiveDescriptor(String.valueOf(castedValue), "", PrimitiveType.REAL_PRIMITIVE);
+                String address = helper.allocateMemory(castType, String.valueOf(castedValue));
+                casted.activeIsConstant();
+                casted.setAddress(address);
+                semanticStack.push(casted);
+                globalDescriptors.put(String.valueOf(castedValue), casted);
+            }
+            else {
+                casted = new PrimitiveDescriptor(helper.getTempName(),"", PrimitiveType.REAL_PRIMITIVE);
+                String addressForCasted = helper.allocateMemory(casted);
+                casted.setAddress(addressForCasted);
+
+                String exprAddress = expr.getAddress();
+                helper.writeComment(false,"Casting Integer to Float");
+                helper.writeCommand("lw", "$t2",exprAddress);
+                helper.writeCommand("mfc1","$t2","$f2");
+                helper.writeCommand("cvt.s.w","$f2","$f2");
+                helper.writeCommand("s.s", "$f2", addressForCasted);
+                semanticStack.push(casted);
+
+            }
+
+        }
+    }
 
     // Mathematical Semantics:
     private void add() {
