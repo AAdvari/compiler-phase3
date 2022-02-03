@@ -1,7 +1,6 @@
 package codegen.helper;
-import codegen.CodeGenerator;
 import codegen.CodeGeneratorImpl;
-import codegen.dscp.*;
+import codegen.dscps.*;
 
 public class Helper {
     public StringBuilder generatedCode;

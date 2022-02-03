@@ -1,6 +1,4 @@
-package codegen.dscp;
-
-import com.sun.org.apache.bcel.internal.generic.FADD;
+package codegen.dscps;
 
 public class PrimitiveDescriptor extends Descriptor {
     // if address equals to constant, then the symName is the value !

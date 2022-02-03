@@ -1,4 +1,4 @@
-package codegen.dscp;
+package codegen.dscps;
 
 public enum FieldType {
     FIELD_METHOD,

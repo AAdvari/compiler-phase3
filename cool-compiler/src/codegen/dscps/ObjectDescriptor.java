@@ -1,4 +1,4 @@
-package codegen.dscp;
+package codegen.dscps;
 import java.util.Map;
 import java.util.TreeMap;
 

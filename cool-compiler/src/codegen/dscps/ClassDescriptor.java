@@ -1,6 +1,5 @@
-package codegen.dscp;
+package codegen.dscps;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 

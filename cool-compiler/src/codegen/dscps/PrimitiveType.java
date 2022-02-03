@@ -1,4 +1,4 @@
-package codegen.dscp;
+package codegen.dscps;
 
 public enum PrimitiveType {
     BOOLEAN_PRIMITIVE,

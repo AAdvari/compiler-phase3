@@ -1,6 +1,6 @@
 package codegen;
 
-import codegen.dscp.*;
+import codegen.dscps.*;
 import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
 import scanner.TokenType;
@@ -15,7 +15,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public Helper helper;
     public ClassDescriptor currentClass;
     public MethodDescriptor currentMethod;
-
     public Map<String, Descriptor> globalDescriptors;
     public ArrayList<Descriptor> objectDescriptors;
 
@@ -29,7 +28,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         // TODO : Added for testing purposes : remove after implementing methods
         currentMethod = new MethodDescriptor("main", new ClassDescriptor("Main"));
     }
-
     public StringBuilder generateCode(){
         return helper.generatedCode.append('\n').append(helper.dataCode);
     }
@@ -83,6 +81,15 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "read_real":
                 read_real();
                 break;
+            case "print_string":
+                print_string();
+                break;
+            case "print_real":
+                print_real();
+                break;
+            case "print_int":
+                print_int();
+                break;
             case "left_array_index":
                 left_array_index();
                 break;
@@ -110,7 +117,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "cast":
                 cast();
                 break;
-
         }
     }
 
@@ -242,6 +248,34 @@ public class CodeGeneratorImpl implements CodeGenerator {
         semanticStack.push(helper.generateReadReal());
     }
 
+    private void print_string(){
+        PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
+        if (pd.type != PrimitiveType.STRING_PRIMITIVE)
+            throw new Error("Expected String but got "+ pd.type);
+        helper.writeComment(false,"Printing " + pd.symName );
+        helper.writeCommand("li","$v0","4");
+        helper.writeCommand("la","$a0",pd.getAddress());
+        helper.writeCommand("syscall");
+
+    }
+    private void print_real(){
+        PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
+        if (pd.type != PrimitiveType.REAL_PRIMITIVE)
+            throw new Error("Expected Real type but got "+ pd.type);
+        helper.writeComment(false,"Printing " + pd.symName );
+        helper.writeCommand("li","$v0","2");
+        helper.writeCommand("l.s","$f12",pd.getAddress());
+        helper.writeCommand("syscall");
+    }
+    private void print_int(){
+        PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
+        if (pd.type != PrimitiveType.REAL_PRIMITIVE)
+            throw new Error("Expected String but got "+ pd.type);
+        helper.writeComment(false,"Printing " + pd.symName );
+        helper.writeCommand("li","$v0","1");
+        helper.writeCommand("lw","$a0",pd.getAddress());
+        helper.writeCommand("syscall");
+    }
 
     private void array_index(){
         Descriptor index = semanticStack.pop();
@@ -363,7 +397,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(expr);
             return;
         }
-
+        semanticStack.push(castAndAllocate(castType, expr));
+    }
+    private PrimitiveDescriptor castAndAllocate(PrimitiveDescriptor castType, PrimitiveDescriptor expr){
         PrimitiveDescriptor casted;
         if (castType.type == PrimitiveType.INTEGER_PRIMITIVE){
             if (expr.isConstant()){
@@ -372,7 +408,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 String address = helper.allocateMemory(castType, String.valueOf(castedValue));
                 casted.activeIsConstant();
                 casted.setAddress(address);
-                semanticStack.push(casted);
                 globalDescriptors.put(String.valueOf(castedValue), casted);
             }
             else {
@@ -386,7 +421,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 helper.writeCommand("cvt.w.s","$f2","$f2");
                 helper.writeCommand("mfc1","$t2","$f2");
                 helper.writeCommand("sw", "$t2", addressForCasted);
-                semanticStack.push(casted);
             }
         }
         else {
@@ -396,7 +430,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 String address = helper.allocateMemory(castType, String.valueOf(castedValue));
                 casted.activeIsConstant();
                 casted.setAddress(address);
-                semanticStack.push(casted);
                 globalDescriptors.put(String.valueOf(castedValue), casted);
             }
             else {
@@ -410,12 +443,14 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 helper.writeCommand("mfc1","$t2","$f2");
                 helper.writeCommand("cvt.s.w","$f2","$f2");
                 helper.writeCommand("s.s", "$f2", addressForCasted);
-                semanticStack.push(casted);
 
             }
 
         }
+        return casted;
+
     }
+
 
     // Mathematical Semantics:
     private void add() {

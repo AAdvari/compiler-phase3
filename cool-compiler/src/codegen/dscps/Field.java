@@ -1,4 +1,4 @@
-package codegen.dscp;
+package codegen.dscps;
 
 public class Field {
     public Descriptor descriptor;
