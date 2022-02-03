@@ -1,4 +1,6 @@
 package codegen.helper;
+import codegen.CodeGenerator;
+import codegen.CodeGeneratorImpl;
 import codegen.dscp.*;
 
 public class Helper {
@@ -6,12 +8,20 @@ public class Helper {
     public StringBuilder dataCode;
 
 
+
+    private CodeGeneratorImpl codeGen;
     private int currentAddress;
 
-    public Helper(){
+    public Helper(CodeGeneratorImpl codeGen){
         generatedCode = new StringBuilder();
         dataCode = new StringBuilder();
         currentAddress = -1;
+        this.codeGen = codeGen;
+        initDataCode();
+    }
+    private void initDataCode(){
+        dataCode.append("inputBuffer: .space 20");
+        addWhiteSpace(true);
     }
     // Allocations :
     public String allocateMemory(Descriptor type, String... value){
@@ -52,6 +62,16 @@ public class Helper {
                 }
                 addWhiteSpace(true);
                 break;
+            case STRING_PRIMITIVE:
+                currentAddress++;
+                if (value.length == 0)
+                    dataCode.append("adr").append(currentAddress).append(": .space 20");
+                else if (value.length == 1)
+                    dataCode.append("adr").append(currentAddress).append(": .asciiz ").append("\"").append(value[0]).append("\"");
+                else
+                    throw new Error("Array for strings not supported yet");
+                return "adr"+currentAddress;
+
             default:
                 throw new Error("undefined primitive type!");
         }
@@ -63,12 +83,56 @@ public class Helper {
     }
 
     // Assignments :
-
-    public void assignSecondToFirst(){}
-
+    public PrimitiveDescriptor generateReadString(){
+        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp", "", PrimitiveType.STRING_PRIMITIVE);
+        String allocatedMemoryAddress =  allocateMemory(pd);
+        writeComment(false,"Reading String");
+        writeCommand("li", "$v0", "8" );
+        writeCommand("la", "$a0", allocatedMemoryAddress);
+        writeCommand("li", "$a1", "20");
+        writeCommand("syscall");
+        pd.address = allocatedMemoryAddress;
+        return pd;
+    }
+    public PrimitiveDescriptor generateReadInt(){
+        return null;
+    }
+    public PrimitiveDescriptor generateReadReal(){
+        return null;
+    }
+    public void assignAddressLabelsValues(String adr1, String adr2, PrimitiveType type){
+        writeComment(false,"# Assigning "+ adr2 + "to"+ adr1 + "Type: " + type);
+        if (type == PrimitiveType.INTEGER_PRIMITIVE || type == PrimitiveType.BOOLEAN_PRIMITIVE){
+            writeCommand("lw","$t6",adr2);
+            writeCommand("sw","$t6",adr1);
+        }
+        else if (type == PrimitiveType.REAL_PRIMITIVE){
+            writeCommand("l.s","$f6",adr2);
+            writeCommand("s.s","$f6",adr1);
+        }
+        else
+            throw new Error("Invalid descriptor type!");
+    }
 
 
     // utils :
+    private void writeCommand(String...literals){
+        generatedCode.append(literals[0]).append(" ");
+        for (int i = 1; i < literals.length ; i++) {
+            generatedCode.append(",").append(literals[i]);
+        }
+        addWhiteSpace(false);
+    }
+    private void writeComment(boolean toDataCode, String comment){
+        if (toDataCode){
+            dataCode.append("#").append(comment);
+            addWhiteSpace(true);
+        }
+        else {
+            generatedCode.append("#").append(comment);
+            addWhiteSpace(false);
+        }
+    }
     private void addWhiteSpace(boolean toDataCode){
         if (toDataCode)
             dataCode.append("\n\t\t");

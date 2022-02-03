@@ -21,7 +21,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public CodeGeneratorImpl(LexicalAnalyser scanner) {
         this.scanner = scanner;
         semanticStack = new Stack<>();
-        helper = new Helper();
+        helper = new Helper(this);
         globalDescriptors = new TreeMap<>(String::compareTo);
     }
 
@@ -55,8 +55,20 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "bigger_than_equal":
             case "less_than":
             case "less_than_equal":
-
-
+            case "equality":
+            case "inequality":
+            case "read_string":
+                read_string();
+                break;
+            case "read_int":
+                read_int();
+                break;
+            case "read_real":
+                read_real();
+                break;
+            case "array_index":
+                array_index();
+                break;
             case "trace_object":
                 traceObject();
                 break;
@@ -72,6 +84,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "array_dcl":
                 declareArray();
                 break;
+            case "array_dcl_complete":
+                arrayDclComplete();
+                break;
 
         }
     }
@@ -79,9 +94,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
 
     // Regular Semantics:
-    public void traceObject() {
+    private void traceObject() {
     }
-    public void declareVariable() {
+    private void declareVariable() {
         Descriptor descriptor = semanticStack.peek();
         if (currentMethod == null) {
             addFieldToClass(descriptor);
@@ -99,7 +114,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         throw new Error("Variable can't be instantiated");
 
     }
-    public void declarePrimitiveVariable(PrimitiveDescriptor pd) {
+    private void declarePrimitiveVariable(PrimitiveDescriptor pd) {
         Symbol currentSymbol = scanner.currentSymbol;
         String token = currentSymbol.getToken();
 
@@ -119,7 +134,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
        allocating memory is done in assignment section for arrays.
 
      */
-    public void declareArray() {
+    private void declareArray() {
         Descriptor arrayElementTypeDescriptor = semanticStack.peek();
         String creatingArrayName = scanner.currentSymbol.getToken();
         if (currentMethod == null) {
@@ -133,16 +148,16 @@ public class CodeGeneratorImpl implements CodeGenerator {
         ArrayDescriptor arrayDescriptor = new ArrayDescriptor(creatingArrayName,arrayElementTypeDescriptor);
         currentMethod.addVariable(creatingArrayName, arrayDescriptor);
     }
-    public void declareObject(ObjectDescriptor od) {
+    private void declareObject(ObjectDescriptor od) {
 
     }
-    public void addFieldToClass(Descriptor descriptor) {
+    private void addFieldToClass(Descriptor descriptor) {
 
     }
-    public void addArrayFieldToClass(Descriptor elementTypeDescriptor){
+    private void addArrayFieldToClass(Descriptor elementTypeDescriptor){
 
     }
-    public void push() {
+    private void push() {
         String symName = scanner.currentSymbol.getToken();
         TokenType tokenType = scanner.currentSymbol.getType();
 
@@ -165,7 +180,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         } else
             throw new Error("Literal"+ symName + " is not declared within current scope!");
     }
-    public void push_constant(String token, TokenType type) {
+    private void push_constant(String token, TokenType type) {
 
         if (globalDescriptors.containsKey(token)) {
             semanticStack.push(globalDescriptors.get(token));
@@ -186,18 +201,62 @@ public class CodeGeneratorImpl implements CodeGenerator {
             default:
                 throw new Error("Not a valid constant type");
         }
-        PrimitiveDescriptor pd = new PrimitiveDescriptor(token, "address", constantType);
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(token, "constant", constantType);
         pd.address = helper.allocateMemory(pd, token);
 
         globalDescriptors.put(token, pd);
     }
+    private void read_int(){
+        semanticStack.push(helper.generateReadInt());
+    }
+    private void read_string(){
+        semanticStack.push(helper.generateReadString());
+    }
+    private void read_real(){
+        semanticStack.push(helper.generateReadReal());
+    }
+    private void array_index(){
+
+    }
+    private void assign(){
+        Descriptor right = semanticStack.pop();
+        Descriptor left = semanticStack.pop();
+    }
+    private void arrayDclComplete(){
+        Descriptor rightExpr = semanticStack.pop();
+        Descriptor rightType = semanticStack.pop();
+        Descriptor left = semanticStack.pop();
+
+        if (!(left instanceof ArrayDescriptor))
+            throw new Error("Left value is not an array type!");
+        ArrayDescriptor leftArray = (ArrayDescriptor) left;
+
+        if (!(rightType instanceof PrimitiveDescriptor))
+            throw new Error("invalid Element type for array");
+        PrimitiveDescriptor pdRight = (PrimitiveDescriptor) rightExpr;
+        if (pdRight.type != PrimitiveType.INTEGER_PRIMITIVE)
+            throw new Error("invalid type for array size");
+
+        if (!leftArray.getElementType().getClass().equals(rightType.getClass()))
+            throw new Error("Inconsistent Array Element Types!");
+
+        // rightExpr has to be a constant PrimitiveDescriptor
+        PrimitiveDescriptor rightExprPd = (PrimitiveDescriptor) rightExpr;
+        if (!rightExprPd.address.equals("constant"))
+            throw new Error("Dynamic array size not supported!");
+        leftArray.setSize(Integer.parseInt(rightExpr.symName));
+
+        String allocatedMemoryStart = helper.allocateMemory(leftArray);
+        leftArray.setStartAddress(allocatedMemoryStart);
+    }
+
 
     // Mathematical Semantics:
-    public void add() {
+    private void add() {
         System.out.println("Adding");
         System.out.println(scanner.currentSymbol);
     }
-    public void subtract() {
+    private void subtract() {
 
     }
 
