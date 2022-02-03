@@ -101,14 +101,28 @@ public class Helper {
         writeCommand("la", "$a0", allocatedMemoryAddress);
         writeCommand("li", "$a1", "20");
         writeCommand("syscall");
-        pd.address = allocatedMemoryAddress;
+        pd.setAddress(allocatedMemoryAddress);
         return pd;
     }
     public PrimitiveDescriptor generateReadInt(){
-        return null;
+        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp","",PrimitiveType.INTEGER_PRIMITIVE);
+        String allocatedMemoryAddress = allocateMemory(pd);
+        writeComment(false, "Reading Integer");
+        writeCommand("li","$v0","5");
+        writeCommand("syscall");
+        writeCommand("sw", "$v0", allocatedMemoryAddress);
+        pd.setAddress(allocatedMemoryAddress);
+        return pd;
     }
     public PrimitiveDescriptor generateReadReal(){
-        return null;
+        PrimitiveDescriptor pd = new PrimitiveDescriptor("$temp", "", PrimitiveType.REAL_PRIMITIVE);
+        String allocatedMemoryAddress = allocateMemory(pd);
+        writeComment(false,"Reading Real");
+        writeCommand("li","$v0","6");
+        writeCommand("syscall");
+        writeCommand("s.s", "$f0", allocatedMemoryAddress);
+        pd.setAddress(allocatedMemoryAddress);
+        return pd;
     }
     public void assignAddressLabelsValues(String adr1, String adr2, PrimitiveType type){
         writeComment(false,"# Assigning "+ adr2 + "to"+ adr1 + "Type: " + type);

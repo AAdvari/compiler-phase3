@@ -24,6 +24,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
         semanticStack = new Stack<>();
         helper = new Helper(this);
         globalDescriptors = new TreeMap<>(String::compareTo);
+
+        // TODO : Added for testing purposes : remove after implementing methods
+        currentMethod = new MethodDescriptor("main", new ClassDescriptor("Main"));
     }
 
     @Override
@@ -99,10 +102,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
     private void declareVariable() {
         Descriptor descriptor = semanticStack.peek();
-        if (currentMethod == null) {
-            addFieldToClass(descriptor);
-            return;
-        }
+        // TODO : Commented for testing purposes : uncomment after implementing methods.
+//        if (currentMethod == null) {
+//            addFieldToClass(descriptor);
+//            return;
+//        }
         if (descriptor instanceof PrimitiveDescriptor) {
             declarePrimitiveVariable((PrimitiveDescriptor) descriptor);
             return;
