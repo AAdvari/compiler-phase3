@@ -117,6 +117,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "cast":
                 cast();
                 break;
+            case "len":
+                len();
+                break;
+
         }
     }
 
@@ -247,7 +251,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
     private void read_real(){
         semanticStack.push(helper.generateReadReal());
     }
-
     private void print_string(){
         PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
         if (pd.type != PrimitiveType.STRING_PRIMITIVE)
@@ -276,7 +279,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("lw","$a0",pd.getAddress());
         helper.writeCommand("syscall");
     }
-
     private void array_index(){
         Descriptor index = semanticStack.pop();
         Descriptor array = semanticStack.pop();
@@ -450,18 +452,35 @@ public class CodeGeneratorImpl implements CodeGenerator {
         return casted;
 
     }
-
+    private void len(){
+        Descriptor descriptor = semanticStack.pop();
+        if (descriptor instanceof ArrayDescriptor){
+            ArrayDescriptor ad = (ArrayDescriptor) descriptor;
+            PrimitiveDescriptor val = new PrimitiveDescriptor(helper.getTempName(),
+                    "", PrimitiveType.INTEGER_PRIMITIVE);
+            String allocatedMemoryAddress = helper.allocateMemory(val,  String.valueOf(ad.getSize()));
+            val.setAddress(allocatedMemoryAddress);
+            semanticStack.push(val);
+        }
+        else
+            throw new Error("len function for given type is not supported!");
+    }
 
     // Mathematical Semantics:
-    private void add() {
-        System.out.println("Adding");
-        System.out.println(scanner.currentSymbol);
-    }
+    private void add() {}
     private void subtract() {
 
     }
-
-
+    private void multiply(){}
+    private void divide(){}
+    private void bitwise_and(){}
+    private void bitwise_or(){}
+    private void bitwise_xor(){}
+    private void plus_plus(){}
+    private void minus_minus(){}
+    private void and(){}
+    private void or(){}
+    private void not(){}
 
     // utils:
     private String stringTypeOfPrimitiveType(PrimitiveType pt){
