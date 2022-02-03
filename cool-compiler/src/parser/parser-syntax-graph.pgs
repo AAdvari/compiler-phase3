@@ -1062,7 +1062,7 @@
         "start": 48,
         "end": 46,
         "token": "]",
-        "func": "array_index",
+        "func": "left_array_index",
         "anchorX": 889.0,
         "anchorY": 523.0,
         "isGraph": false,

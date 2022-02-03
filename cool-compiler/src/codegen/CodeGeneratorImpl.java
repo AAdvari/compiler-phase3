@@ -66,6 +66,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "read_real":
                 read_real();
                 break;
+            case "left_array_index":
+
             case "array_index":
                 array_index();
                 break;
@@ -215,12 +217,39 @@ public class CodeGeneratorImpl implements CodeGenerator {
     private void read_real(){
         semanticStack.push(helper.generateReadReal());
     }
-    private void array_index(){
 
-    }
+
+    private void array_index(){}
+    private void left_array_index(){}
+
+
     private void assign(){
         Descriptor right = semanticStack.pop();
         Descriptor left = semanticStack.pop();
+        if (!left.getClass().equals(right.getClass())){
+            throw new Error("Assigning inconsistent types.");
+        }
+        if (left instanceof ArrayDescriptor){
+            ArrayDescriptor leftArray = (ArrayDescriptor) left;
+            ArrayDescriptor rightArray = (ArrayDescriptor) right;
+            leftArray.setSize(rightArray.getSize());
+            leftArray.setStartAddress(rightArray.getStartAddress());
+        }
+        else if (left instanceof PrimitiveDescriptor){
+            PrimitiveDescriptor leftPrimitive = (PrimitiveDescriptor) left;
+            PrimitiveDescriptor rightPrimitive = (PrimitiveDescriptor) right;
+            if (leftPrimitive.type == PrimitiveType.STRING_PRIMITIVE){
+                if (leftPrimitive.getAddress().equals("constant"))
+                    throw new Error("Assignment to a constant!");
+                else {
+                    leftPrimitive.setAddress(rightPrimitive.getAddress());
+                }
+            }
+            else {
+                helper.assignAddressLabelsValues(leftPrimitive.getAddress(), rightPrimitive.getAddress(), leftPrimitive.type);
+            }
+        } else
+            throw new Error("Invalid Types for assignment!");
     }
     private void arrayDclComplete(){
         Descriptor rightExpr = semanticStack.pop();

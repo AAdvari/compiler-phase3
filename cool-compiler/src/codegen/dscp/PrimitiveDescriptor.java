@@ -9,4 +9,12 @@ public class PrimitiveDescriptor extends Descriptor {
         this.type = type;
         this.address = address;
     }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }
