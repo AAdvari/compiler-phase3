@@ -297,8 +297,12 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("add", "$t6","$t6","$t6");
         helper.writeCommand("add", "$t6","$t6","$t6");
 
-        String command = element.type == PrimitiveType.REAL_PRIMITIVE ? "s.s" : "sw";
-        helper.writeCommand(command, arrayDescriptor.getStartAddress()+"($t6)", address);
+        String store = element.type == PrimitiveType.REAL_PRIMITIVE ? "s.s" : "sw";
+        String load = element.type == PrimitiveType.REAL_PRIMITIVE ? "l.s" : "lw";
+        String reg = element.type == PrimitiveType.REAL_PRIMITIVE ? "$f6" : "$t6";
+
+        helper.writeCommand(load, reg, arrayDescriptor.getStartAddress()+"($t6)");
+        helper.writeCommand(store, reg, address);
 
         semanticStack.push(element);
     }
@@ -317,8 +321,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         helper.writeComment(false,"# Left Array Index");
         helper.writeCommand("lw", "$t7", indexPd.getAddress());
-        helper.writeCommand("add", "$t7","t7","t7");
-        helper.writeCommand("add", "$t7","t7","t7");
+        helper.writeCommand("add", "$t7","$t7","$t7");
+        helper.writeCommand("add", "$t7","$t7","$t7");
 
         PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(),
                 arrayDescriptor.getStartAddress()+"($t7)", elementDSCP.type);
