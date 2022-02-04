@@ -41,7 +41,7 @@ public class Main {
         } catch (Error e){
             System.out.println(e.getMessage());
             System.out.println("Parser confronted with syntactical errors.");
-            System.out.println(codeGenerator.generateCode());
+//            System.out.println(codeGenerator.generateCode());
 
         }
     }

@@ -80,10 +80,14 @@ public class Helper {
                 break;
             case STRING_PRIMITIVE:
                 currentAddress++;
-                if (value.length == 0)
+                if (value.length == 0){
                     dataCode.append("adr").append(currentAddress).append(": .space 20");
-                else if (value.length == 1)
+                    addWhiteSpace(true);
+                }
+                else if (value.length == 1){
                     dataCode.append("adr").append(currentAddress).append(": .asciiz ").append("\"").append(value[0]).append("\"");
+                    addWhiteSpace(true);
+                }
                 else
                     throw new Error("Array for strings not supported yet");
                 return "adr"+currentAddress;
@@ -149,7 +153,9 @@ public class Helper {
     public void writeCommand(String...literals){
         generatedCode.append(literals[0]).append(" ");
         for (int i = 1; i < literals.length ; i++) {
-            generatedCode.append(",").append(literals[i]);
+            generatedCode.append(literals[i]);
+            if (i != literals.length -1)
+                generatedCode.append(",");
         }
         addWhiteSpace(false);
     }

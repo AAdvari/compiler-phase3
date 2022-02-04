@@ -80,13 +80,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "read_real":
                 read_real();
                 break;
-            case "print_string":
-            case "print_real":
-            case "print_int":
+            case "print_expr":
                 print_expr();
                 break;
             case "left_array_index":
-                left_array_index();
+                leftArrayIndex();
                 break;
             case "array_index":
                 array_index();
@@ -203,14 +201,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
             Descriptor descriptor = globalDescriptors.get(symName);
             semanticStack.push(descriptor);
         }
-        else if (currentClass.fields.containsKey(symName)) {
-            System.out.println("Pushing Class Fields is not implemented yet");
-
-        } else
-            throw new Error("Literal"+ symName + " is not declared within current scope!");
+//        else if (currentClass.fields.containsKey(symName)) {
+//            System.out.println("Pushing Class Fields is not implemented yet");
+//        }
+        else
+            throw new Error("Literal "+ symName + " is not declared within current scope!");
     }
     private void push_constant(String token, TokenType type) {
-        System.out.println("Push Constant Called: " + token);
         if (globalDescriptors.containsKey(token)) {
             semanticStack.push(globalDescriptors.get(token));
             return;
@@ -273,8 +270,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("syscall");
     }
     private void print_int(PrimitiveDescriptor pd){
-        if (pd.type != PrimitiveType.REAL_PRIMITIVE)
-            throw new Error("Expected String but got "+ pd.type);
+        if (pd.type != PrimitiveType.INTEGER_PRIMITIVE)
+            throw new Error("Expected Integer but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
         helper.writeCommand("li","$v0","1");
         helper.writeCommand("lw","$a0",pd.getAddress());
@@ -305,7 +302,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         semanticStack.push(element);
     }
-    private void left_array_index(){
+    private void leftArrayIndex(){
 
         Descriptor index = semanticStack.pop();
         Descriptor array = semanticStack.pop();
@@ -325,6 +322,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(),
                 arrayDescriptor.getStartAddress()+"($t7)", elementDSCP.type);
+        System.out.println("elemType: " + elementDSCP.type);
         semanticStack.push(pd);
     }
     private void assign(){
@@ -384,9 +382,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         leftArray.setSize(size);
 
-        System.out.println(Integer.parseInt(rightExpr.symName));
         String allocatedMemoryStart = helper.allocateMemory(leftArray);
-        System.out.println(allocatedMemoryStart);
         leftArray.setStartAddress(allocatedMemoryStart);
     }
     private void cast(){
@@ -406,7 +402,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor casted;
         if (castType.type == PrimitiveType.INTEGER_PRIMITIVE){
             if (expr.isConstant()){
-                int castedValue = Integer.parseInt(expr.symName);
+                int castedValue = (int) Float.parseFloat(expr.symName);
                 casted = new PrimitiveDescriptor(String.valueOf(castedValue), "", PrimitiveType.INTEGER_PRIMITIVE);
                 String address = helper.allocateMemory(castType, String.valueOf(castedValue));
                 casted.activeIsConstant();
@@ -428,7 +424,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         }
         else {
             if (expr.isConstant()){
-                float castedValue = Float.parseFloat(expr.symName);
+                float castedValue = (float) Integer.parseInt(expr.symName);
                 casted = new PrimitiveDescriptor(String.valueOf(castedValue), "", PrimitiveType.REAL_PRIMITIVE);
                 String address = helper.allocateMemory(castType, String.valueOf(castedValue));
                 casted.activeIsConstant();
