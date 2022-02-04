@@ -46,6 +46,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void doSemantic(String sem) {
         switch (sem) {
             case "push":
+                push();
+                break;
             case "add":
             case "subtract":
             case "multiply":
@@ -67,7 +69,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "minus_minus":
             case "plus_plus":
             case "unary_minus":
-
+                System.out.println("Not Implemented Yet");
+                break;
             case "read_string":
                 read_string();
                 break;
@@ -78,13 +81,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 read_real();
                 break;
             case "print_string":
-                print_string();
-                break;
             case "print_real":
-                print_real();
-                break;
             case "print_int":
-                print_int();
+                print_expr();
                 break;
             case "left_array_index":
                 left_array_index();
@@ -247,8 +246,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     private void read_real(){
         semanticStack.push(helper.generateReadReal());
     }
-    private void print_string(){
-        PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
+    private void print_string(PrimitiveDescriptor pd){
         if (pd.type != PrimitiveType.STRING_PRIMITIVE)
             throw new Error("Expected String but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
@@ -257,8 +255,16 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("syscall");
 
     }
-    private void print_real(){
+    private void print_expr(){
         PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
+        if (pd.type == PrimitiveType.REAL_PRIMITIVE)
+            print_real(pd);
+        else if (pd.type == PrimitiveType.STRING_PRIMITIVE)
+            print_string(pd);
+        else
+            print_int(pd);
+    }
+    private void print_real(PrimitiveDescriptor pd){
         if (pd.type != PrimitiveType.REAL_PRIMITIVE)
             throw new Error("Expected Real type but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
@@ -266,8 +272,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("l.s","$f12",pd.getAddress());
         helper.writeCommand("syscall");
     }
-    private void print_int(){
-        PrimitiveDescriptor pd = (PrimitiveDescriptor) semanticStack.pop();
+    private void print_int(PrimitiveDescriptor pd){
         if (pd.type != PrimitiveType.REAL_PRIMITIVE)
             throw new Error("Expected String but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
