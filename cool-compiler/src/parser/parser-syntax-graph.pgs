@@ -902,7 +902,7 @@
         "start": 39,
         "end": 38,
         "token": "]",
-        "func": "array_left_side",
+        "func": "left_array_index",
         "anchorX": 886.5,
         "anchorY": 537.0,
         "isGraph": false,
