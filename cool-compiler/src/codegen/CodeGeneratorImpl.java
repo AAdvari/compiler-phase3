@@ -5,7 +5,6 @@ import codegen.helper.Helper;
 import scanner.LexicalAnalyser;
 import scanner.TokenType;
 import scanner.Symbol;
-
 import java.util.*;
 
 public class CodeGeneratorImpl implements CodeGenerator {
@@ -47,31 +46,28 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public void doSemantic(String sem) {
         switch (sem) {
             case "push":
-                push();
-                break;
             case "add":
-                add();
-                break;
             case "subtract":
-                subtract();
-                break;
             case "multiply":
             case "divide":
             case "mod":
-            case "minus_minus":
-            case "plus_plus":
             case "bitwise_and":
             case "bitwise_or":
             case "bitwise_xor":
-            case "and":
-            case "or":
-            case "not":
             case "bigger_than":
             case "bigger_than_equal":
             case "less_than":
             case "less_than_equal":
             case "equality":
             case "inequality":
+            case "and":
+            case "or":
+                twoOperandCheckAndCalculate(sem);
+            case "not":
+            case "minus_minus":
+            case "plus_plus":
+            case "unary_minus":
+
             case "read_string":
                 read_string();
                 break;
@@ -466,21 +462,594 @@ public class CodeGeneratorImpl implements CodeGenerator {
             throw new Error("len function for given type is not supported!");
     }
 
+
     // Mathematical Semantics:
-    private void add() {}
-    private void subtract() {
+    private void twoConstantOperandCheckAndCalculate(String semantic,PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        PrimitiveType type = firstOperand.type;
+        String resValue;
+        PrimitiveType resType;
+        switch (semantic){
+            case "add":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) + Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) + Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.REAL_PRIMITIVE;
+                }
+                else
+                    throw new Error("Addition is not applicable on given operand types.");
+                break;
+            case "subtract":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) - Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) - Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.REAL_PRIMITIVE;
+                }
+                else
+                    throw new Error("Subtraction is not applicable on given operand types.");
+                break;
+            case "multiply":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) * Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) * Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.REAL_PRIMITIVE;
+                }
+                else
+                    throw new Error("Multiplication is not applicable on given operand types.");
+                break;
+            case "mod":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) % Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else
+                    throw new Error("Mod is not applicable on given operand types.");
+                break;
+            case "divide":
+                if (secondOperand.symName.charAt(0) == '0')
+                    throw new Error("Can't divide by zero");
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) / Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) / Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.REAL_PRIMITIVE;
+                }
+                else
+                    throw new Error("Division is not applicable on given operand types.");
+                break;
+            case "bitwise_and":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) & Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else
+                    throw new Error("Bitwise and  is not applicable on given operand types.");
+                break;
+            case "bitwise_or":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) | Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else
+                    throw new Error("Bitwise or is not applicable on given operand types.");
+                break;
+            case "bitwise_xor":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) ^ Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.INTEGER_PRIMITIVE;
+                }
+                else
+                    throw new Error("Bitwise xor  is not applicable on given operand types.");
+                break;
+            case "bigger_than":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) > Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) > Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else
+                    throw new Error("biggerThan operator is not applicable on given operand types.");
+                break;
+            case "bigger_than_equal":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) >= Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) >= Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else
+                    throw new Error("biggerThanEqual operator is not applicable on given operand types.");
+                break;
+            case "less_than":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) < Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) < Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else
+                    throw new Error("lessThan operator is not applicable on given operand types.");
+                break;
+            case "less_than_equal":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) <= Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) <= Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else
+                    throw new Error("lessThanEqual operator is not applicable on given operand types.");
+                break;
+            case "equality":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE || type == PrimitiveType.BOOLEAN_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) == Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) == Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else
+                    throw new Error("Equality operator is not applicable on given operand types.");
+                break;
+            case "inequality":
+                if (type == PrimitiveType.INTEGER_PRIMITIVE || type == PrimitiveType.BOOLEAN_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Integer.parseInt(firstOperand.symName) != Integer.parseInt(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else if (type == PrimitiveType.REAL_PRIMITIVE){
+                    resValue = String.valueOf(
+                            Float.parseFloat(firstOperand.symName) !=  Float.parseFloat(secondOperand.symName)
+                    );
+                    resType = PrimitiveType.BOOLEAN_PRIMITIVE;
+                }
+                else
+                    throw new Error("Inequality operator is not applicable on given operand types.");
+                break;
+            case "and":
+            case "or":
+            case "xor":
+                throw new Error("Invalid boolean operation!");
+            default:
+                throw new Error("Operation is not supported");
+        }
+
+        PrimitiveDescriptor pd = new PrimitiveDescriptor(resValue, "", resType);
+        String allocatedAddress = helper.allocateMemory(pd, resValue);
+        pd.setAddress(allocatedAddress);
+        pd.activeIsConstant();
+        semanticStack.push(pd);
+        globalDescriptors.put(resValue, pd);
+    }
+    private void twoOperandCheckAndCalculate(String semantic){
+        PrimitiveDescriptor firstOperand = (PrimitiveDescriptor) semanticStack.pop();
+        PrimitiveDescriptor secondOperand = (PrimitiveDescriptor) semanticStack.pop();
+        if (firstOperand.type != secondOperand.type){
+            throw new Error("Inconsistent types for " + semantic + " operation");
+        }
+        if (firstOperand.isConstant() && secondOperand.isConstant()){
+            twoConstantOperandCheckAndCalculate(semantic, firstOperand, secondOperand);
+            return;
+        }
+
+        switch (semantic){
+            case "add":
+                add(firstOperand, secondOperand);
+                break;
+            case "subtract":
+                subtract(firstOperand, secondOperand);
+                break;
+            case "multiply":
+                multiply(firstOperand, secondOperand);
+                break;
+            case "divide":
+                divide(firstOperand, secondOperand);
+                break;
+            case "mod":
+                mod(firstOperand, secondOperand);
+                break;
+            case "bitwise_and":
+                bitwiseAnd(firstOperand, secondOperand);
+                break;
+            case "bitwise_or":
+                bitwiseOr(firstOperand, secondOperand);
+                break;
+            case "bitwise_xor":
+                bitwiseXor(firstOperand, secondOperand);
+                break;
+            case "bigger_than":
+                biggerThan(firstOperand, secondOperand);
+                break;
+            case "bigger_than_equal":
+                biggerThanEqual(firstOperand, secondOperand);
+                break;
+            case "less_than":
+                lessThan(firstOperand, secondOperand);
+                break;
+            case "less_than_equal":
+                lessThanEqual(firstOperand, secondOperand);
+                break;
+            case "equality":
+                equality(firstOperand, secondOperand);
+                break;
+            case "inequality":
+                inequality(firstOperand, secondOperand);
+                break;
+            case "and":
+                and(firstOperand, secondOperand);
+                break;
+            case "or":
+                or(firstOperand, secondOperand);
+                break;
+            case "xor":
+                xor(firstOperand, secondOperand);
+                break;
+
+        }
+    }
+
+
+
+    private void add(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Addition");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("add.s","$f0","$f0","$f1");
+            helper.writeCommand("s.s", "$f0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Addition");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("add","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for addition");
+    }
+    private void subtract(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Subtraction");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("sub.s","$f0","$f0","$f1");
+            helper.writeCommand("s.s", "$f0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Subtraction");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("sub","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for Subtraction");
+    }
+
+    private void multiply(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+    private void divide(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+    private void mod(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+
+    private void bitwiseAnd(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"BitwiseAnd");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("and","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("Not valid type for bitwise operation");
+    }
+    private void bitwiseOr(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"BitwiseOr");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("or","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("Not valid type for bitwise operation");
+    }
+
+    private void bitwiseXor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+
+
+    private void biggerThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Comparison : BiggerThan");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("c.lt.s","$f0","$f1");
+            helper.writeCommand("mov","$t0","$1");
+            helper.writeCommand("movt","$t0","$0","$fcc0");
+            helper.writeCommand("lw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Comparison : BiggerThan");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("sgt","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for addition");
+    }
+    private void lessThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Comparison : LessThan");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("c.lt.s","$f0","$f1");
+            helper.writeCommand("mov","$t0","$0");
+            helper.writeCommand("movt","$t0","$1","$fcc0");
+            helper.writeCommand("lw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Comparison : LessThan");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("slt","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for addition");
 
     }
-    private void multiply(){}
-    private void divide(){}
-    private void bitwise_and(){}
-    private void bitwise_or(){}
-    private void bitwise_xor(){}
-    private void plus_plus(){}
-    private void minus_minus(){}
-    private void and(){}
-    private void or(){}
-    private void not(){}
+    private void lessThanEqual(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Comparison : LessThanEqual");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("c.le.s","$f0","$f1");
+            helper.writeCommand("mov","$t0","$0");
+            helper.writeCommand("movt","$t0","$1","$fcc0");
+            helper.writeCommand("lw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+    }
+    else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Comparison : LessThanEqual");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("sle","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+    }
+    else
+        throw new Error("invalid types for addition");
+    }
+    private void equality(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Comparison : equality");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("c.eq.s","$f0","$f1");
+            helper.writeCommand("mov","$t0","$0");
+            helper.writeCommand("movt","$t0","$1","$fcc0");
+            helper.writeCommand("lw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Comparison : equality");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("seq","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for addition");
+    }
+    private void inequality(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Comparison : inequality");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("c.eq.s","$f0","$f1");
+            helper.writeCommand("mov","$t0","$1");
+            helper.writeCommand("movt","$t0","$0","$fcc0");
+            helper.writeCommand("lw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Comparison : inequality");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("sne","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for addition");
+    }
+    private void biggerThanEqual(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Real Comparison : BiggerThanEqual");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("c.le.s","$f0","$f1");
+            helper.writeCommand("mov","$t0","$1");
+            helper.writeCommand("movt","$t0","$0","$fcc0");
+            helper.writeCommand("lw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Integer Comparison : BiggerThanEqual");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("sge","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for addition");
+    }
+
+
+    private void and(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"And");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("and","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("Not valid type for bitwise operation");
+    }
+    private void or(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            helper.writeComment(false,"Or");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("or","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("Not valid type for bitwise operation");
+    }
+
+    private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+
 
     // utils:
     private String stringTypeOfPrimitiveType(PrimitiveType pt){
