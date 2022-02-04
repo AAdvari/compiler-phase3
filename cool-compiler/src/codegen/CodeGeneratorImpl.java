@@ -162,7 +162,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         String type = stringTypeOfPrimitiveType(pd.type);
 
-        String address = helper.allocateMemory(globalDescriptors.get(type), "0");
+        String address = helper.allocateMemory(globalDescriptors.get(type),
+                pd.type==PrimitiveType.REAL_PRIMITIVE? "0.0" : "0");
+
         PrimitiveDescriptor creatingVarDescriptor =
                 new PrimitiveDescriptor(token, address, pd.type);
         currentMethod.addVariable(token, creatingVarDescriptor);

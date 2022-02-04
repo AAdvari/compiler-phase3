@@ -72,9 +72,9 @@ public class Helper {
             case REAL_PRIMITIVE:
                 currentAddress++;
                 dataCode.append("adr").append(currentAddress).append(": .float ")
-                        .append(value.length == 0 ? "0": value[0]);
+                        .append(value.length == 0 ? "0.0": value[0]);
                 for (int i = 0; i < count - 1; i++) {
-                    dataCode.append(",").append(value.length == 0 ? "0" : value[i]);
+                    dataCode.append(",").append(value.length == 0 ? "0.0" : value[i]);
                 }
                 addWhiteSpace(true);
                 break;
