@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         String inputCoolFilePath = "cool-compiler/src/app.cool";
-        String outputFilePath = " ";
+        String outputFilePath = "cool-compiler/src/out.s";
         String tablePath = "cool-compiler/src/parser/table.npt";
 
 //        if (args.length >= 1) {
@@ -30,14 +30,22 @@ public class Main {
 //        }
 
         File file = new File(inputCoolFilePath);
+        File out = new File(outputFilePath);
+        if(out.exists()){
+            out.delete();
+            out.createNewFile();
+        }
+        FileWriter fw = new FileWriter(out);
         LexicalAnalyser scanner = new LexicalAnalyser(new FileReader(file));
         CodeGeneratorImpl codeGenerator = new CodeGeneratorImpl(scanner);
         Parser parser = new Parser(scanner, codeGenerator, tablePath);
 
         try{
             parser.parse();
-            System.out.println(codeGenerator.generateCode());
-
+            StringBuilder generatedCode = codeGenerator.generateCode();
+            fw.write(generatedCode.toString());
+            fw.flush();
+            System.out.println(generatedCode);
         } catch (Error e){
             System.out.println(e.getMessage());
             System.out.println("Parser confronted with syntactical errors.");

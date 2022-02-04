@@ -348,6 +348,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (!left.getClass().equals(right.getClass())){
             throw new Error("Assigning inconsistent types.");
         }
+
         if (left instanceof ArrayDescriptor){
             ArrayDescriptor leftArray = (ArrayDescriptor) left;
             ArrayDescriptor rightArray = (ArrayDescriptor) right;
@@ -357,6 +358,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else if (left instanceof PrimitiveDescriptor){
             PrimitiveDescriptor leftPrimitive = (PrimitiveDescriptor) left;
             PrimitiveDescriptor rightPrimitive = (PrimitiveDescriptor) right;
+            if (leftPrimitive.type != rightPrimitive.type)
+                throw new Error("assigning " + rightPrimitive.type + " to " + leftPrimitive.type + " is illegal");
             if (leftPrimitive.type == PrimitiveType.STRING_PRIMITIVE){
                 if (leftPrimitive.isConstant())
                     throw new Error("Assignment to a constant!");
@@ -772,11 +775,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
-
     private void add(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Addition");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
@@ -788,6 +791,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Addition");
             helper.writeCommand("lw", "$t0", firstOperand.getAddress());
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());
@@ -803,10 +807,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Subtraction");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
-            helper.writeCommand("sub.s","$f0","$f0","$f1");
+            helper.writeCommand("sub.s","$f0","$f1","$f0");
             helper.writeCommand("s.s", "$f0", allocatedAddress);
 
             semanticStack.push(pd);
@@ -814,10 +819,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Subtraction");
             helper.writeCommand("lw", "$t0", firstOperand.getAddress());
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());
-            helper.writeCommand("sub","$t0","$t0","$t1");
+            helper.writeCommand("sub","$t0","$t1","$t0");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
             semanticStack.push(pd);
@@ -834,6 +840,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"BitwiseAnd");
             helper.writeCommand("lw", "$t0", firstOperand.getAddress());
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());
@@ -849,6 +856,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"BitwiseOr");
             helper.writeCommand("lw", "$t0", firstOperand.getAddress());
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());
@@ -868,22 +876,25 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            String label = helper.labelMaker();
+            String label1 = helper.labelMaker();
             helper.writeComment(false,"Real Comparison : BiggerThan");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
             helper.writeCommand("c.lt.s","$f0","$f1");
-            helper.writeCommand("mov","$t0","$1");
-            helper.writeCommand("movt","$t0","$0","$fcc0");
-            helper.writeCommand("lw", "$t0", allocatedAddress);
-
+            helper.writeCommand("cfc1","$t0","$25");
+            helper.writeCommand("andi","$t0","1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
             semanticStack.push(pd);
         }
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Comparison : BiggerThan");
-            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
-            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("lw", "$t1", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t0", secondOperand.getAddress());
             helper.writeCommand("sgt","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
@@ -896,22 +907,24 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Comparison : LessThan");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
-            helper.writeCommand("c.lt.s","$f0","$f1");
-            helper.writeCommand("mov","$t0","$0");
-            helper.writeCommand("movt","$t0","$1","$fcc0");
-            helper.writeCommand("lw", "$t0", allocatedAddress);
+            helper.writeCommand("c.lt.s","$f1","$f0");
+            helper.writeCommand("cfc1","$t0","$25");
+            helper.writeCommand("andi","$t0","1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
 
             semanticStack.push(pd);
         }
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Comparison : LessThan");
-            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
-            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("lw", "$t1", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t0", secondOperand.getAddress());
             helper.writeCommand("slt","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
@@ -925,22 +938,24 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Comparison : LessThanEqual");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
-            helper.writeCommand("c.le.s","$f0","$f1");
-            helper.writeCommand("mov","$t0","$0");
-            helper.writeCommand("movt","$t0","$1","$fcc0");
-            helper.writeCommand("lw", "$t0", allocatedAddress);
+            helper.writeCommand("c.le.s","$f1","$f0");
+            helper.writeCommand("cfc1","$t0","$25");
+            helper.writeCommand("andi","$t0","1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
 
             semanticStack.push(pd);
     }
     else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Comparison : LessThanEqual");
-            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
-            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("lw", "$t1", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t0", secondOperand.getAddress());
             helper.writeCommand("sle","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
@@ -953,22 +968,24 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Comparison : equality");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
-            helper.writeCommand("c.eq.s","$f0","$f1");
-            helper.writeCommand("mov","$t0","$0");
-            helper.writeCommand("movt","$t0","$1","$fcc0");
-            helper.writeCommand("lw", "$t0", allocatedAddress);
+            helper.writeCommand("c.eq.s","$f1","$f0");
+            helper.writeCommand("cfc1","$t0","$25");
+            helper.writeCommand("andi","$t0","1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
 
             semanticStack.push(pd);
         }
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Comparison : equality");
-            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
-            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("lw", "$t1", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t0", secondOperand.getAddress());
             helper.writeCommand("seq","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
@@ -981,22 +998,25 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Comparison : inequality");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
             helper.writeCommand("c.eq.s","$f0","$f1");
-            helper.writeCommand("mov","$t0","$1");
-            helper.writeCommand("movt","$t0","$0","$fcc0");
-            helper.writeCommand("lw", "$t0", allocatedAddress);
+            helper.writeCommand("cfc1","$t0","$25");
+            helper.writeCommand("andi","$t0","1");
+            helper.writeCommand("seq","$t0","$t0","0");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
 
             semanticStack.push(pd);
         }
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Comparison : inequality");
-            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
-            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("lw", "$t1", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t0", secondOperand.getAddress());
             helper.writeCommand("sne","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
@@ -1009,22 +1029,24 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Real Comparison : BiggerThanEqual");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
             helper.writeCommand("c.le.s","$f0","$f1");
-            helper.writeCommand("mov","$t0","$1");
-            helper.writeCommand("movt","$t0","$0","$fcc0");
-            helper.writeCommand("lw", "$t0", allocatedAddress);
+            helper.writeCommand("cfc1","$t0","$25");
+            helper.writeCommand("andi","$t0","1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
 
             semanticStack.push(pd);
         }
         else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Integer Comparison : BiggerThanEqual");
-            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
-            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("lw", "$t1", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t0", secondOperand.getAddress());
             helper.writeCommand("sge","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
 
@@ -1039,6 +1061,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"And");
             helper.writeCommand("lw", "$t0", firstOperand.getAddress());
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());
@@ -1054,6 +1077,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
             String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
             helper.writeComment(false,"Or");
             helper.writeCommand("lw", "$t0", firstOperand.getAddress());
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());

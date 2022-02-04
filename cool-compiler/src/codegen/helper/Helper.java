@@ -11,6 +11,7 @@ public class Helper {
     private CodeGeneratorImpl codeGen;
     private int currentAddress;
     private int currentTemp;
+    private int currentLabel = 0;
     public Helper(CodeGeneratorImpl codeGen){
         generatedCode = new StringBuilder();
         dataCode = new StringBuilder();
@@ -175,6 +176,10 @@ public class Helper {
         else
             generatedCode.append("\n\t\t");
     }
-
+    public String labelMaker() {
+        String s = "label" + currentLabel;
+        currentLabel++;
+        return  s;
+    }
 
 }
