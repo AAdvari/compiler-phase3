@@ -89,6 +89,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "array_dcl_complete":
                 arrayDclComplete();
                 break;
+            case "start_be_while":
+                start_be_while();
+                break;
 
         }
     }
@@ -314,7 +317,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
-  private void start_be(){
+  private void start_be_while(){
       String startLabel = helper.labelMaker();
       helper.writeComment(true,"start of while loop with label" + startLabel);
       startLabel += ":";
