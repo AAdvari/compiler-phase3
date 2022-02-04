@@ -314,6 +314,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
-
+  private void start_be(){
+      String startLabel = helper.labelMaker();
+      helper.writeComment(true,"start of while loop with label" + startLabel);
+      startLabel += ":";
+      helper.writeCommand(startLabel);
+  }
 
 }

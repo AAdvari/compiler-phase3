@@ -169,7 +169,7 @@ public class Helper {
     public String allocateConstantMemoryAndSet(String token, PrimitiveType constantType) {
         return null;
     }
-    private String labelMaker() {
+    public String labelMaker() {
         String s = "label" + currentLabel;
         currentLabel++;
         return  s;
