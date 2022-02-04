@@ -92,7 +92,12 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "start_be_while":
                 start_be_while();
                 break;
-
+            case "while" :
+                while_dcl();
+                break;
+            case "while_complete":
+                complete_while();
+                break;
         }
     }
 
@@ -323,13 +328,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
   private void start_be_while(){
       startLabel = helper.labelMaker();
-      helper.writeComment(true,"start of while loop with label" + startLabel);
+      helper.writeComment(false,"start of while loop with label" + startLabel);
       startLabel += ":";
-      helper.writeCommand(startLabel);
+      helper.addLabel(startLabel);
   }
   private void while_dcl(){
       endLabel = helper.labelMaker();
-      helper.writeComment(true,"while jz");
+      helper.writeComment(false,"while jz");
       Descriptor condition = semanticStack.pop();
       if (condition instanceof PrimitiveDescriptor){
           if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
@@ -344,6 +349,12 @@ public class CodeGeneratorImpl implements CodeGenerator {
       helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
       helper.writeCommand("lw", "$t1", "0($t0)");
       helper.writeCommand("beqz", "$t1",endLabel);
+  }
+
+  private void complete_while(){
+      helper.writeComment(false,"complete while");
+      helper.writeCommand("j",startLabel);
+      helper.addLabel(endLabel);
   }
 
 }
