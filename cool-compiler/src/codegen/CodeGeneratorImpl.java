@@ -317,11 +317,33 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
+
+   String startLabel;
+   String endLabel;
+
   private void start_be_while(){
-      String startLabel = helper.labelMaker();
+      startLabel = helper.labelMaker();
       helper.writeComment(true,"start of while loop with label" + startLabel);
       startLabel += ":";
       helper.writeCommand(startLabel);
+  }
+  private void while_dcl(){
+      endLabel = helper.labelMaker();
+      helper.writeComment(true,"while jz");
+      Descriptor condition = semanticStack.pop();
+      if (condition instanceof PrimitiveDescriptor){
+          if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
+              throw new Error("expr should be a boolean type");
+          }
+      }
+      else {
+          throw new Error("Wrong expr decleration");
+      }
+
+
+      helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
+      helper.writeCommand("lw", "$t1", "0($t0)");
+      helper.writeCommand("beqz", "$t1",endLabel);
   }
 
 }
