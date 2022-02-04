@@ -4042,7 +4042,7 @@
         "start": 206,
         "end": 205,
         "token": "string",
-        "func": "",
+        "func": "push",
         "anchorX": 480.5,
         "anchorY": 454.0,
         "isGraph": false,
