@@ -35,10 +35,21 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor integer = new PrimitiveDescriptor("int", "", PrimitiveType.INTEGER_PRIMITIVE);
         PrimitiveDescriptor bool = new PrimitiveDescriptor("bool", "", PrimitiveType.BOOLEAN_PRIMITIVE);
         PrimitiveDescriptor string = new PrimitiveDescriptor("string", "", PrimitiveType.STRING_PRIMITIVE);
+
+        PrimitiveDescriptor trueBool = new PrimitiveDescriptor("true", "", PrimitiveType.BOOLEAN_PRIMITIVE);
+        PrimitiveDescriptor falseBool = new PrimitiveDescriptor("false", "", PrimitiveType.BOOLEAN_PRIMITIVE);
+        String trueBoolAddress = helper.allocateMemory(trueBool, String.valueOf(1));
+        String falseBoolAddress = helper.allocateMemory(trueBool, String.valueOf(0));
+
+        trueBool.setAddress(trueBoolAddress);
+        falseBool.setAddress(falseBoolAddress);
+
         globalDescriptors.put("real",real);
         globalDescriptors.put("int",integer);
         globalDescriptors.put("bool",bool);
         globalDescriptors.put("string",string);
+        globalDescriptors.put("true", trueBool);
+        globalDescriptors.put("false", falseBool);
         globalDescriptors.put("void", null);
     }
 
@@ -270,8 +281,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("syscall");
     }
     private void print_int(PrimitiveDescriptor pd){
-        if (pd.type != PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("Expected Integer but got "+ pd.type);
+        if (pd.type != PrimitiveType.INTEGER_PRIMITIVE && pd.type != PrimitiveType.BOOLEAN_PRIMITIVE)
+            throw new Error("Expected Integer or boolean but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
         helper.writeCommand("li","$v0","1");
         helper.writeCommand("lw","$a0",pd.getAddress());
