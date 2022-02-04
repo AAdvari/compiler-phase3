@@ -831,11 +831,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else
             throw new Error("invalid types for Subtraction");
     }
-
     private void multiply(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
     private void divide(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
     private void mod(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
-
     private void bitwiseAnd(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
@@ -850,7 +848,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation");
+            throw new Error("Not valid type for bitwise operation &");
     }
     private void bitwiseOr(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -866,12 +864,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation");
+            throw new Error("Not valid type for bitwise operation |");
     }
-
     private void bitwiseXor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
-
-
     private void biggerThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
@@ -901,7 +896,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for addition");
+            throw new Error("invalid types to compare (>)");
     }
     private void lessThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -931,7 +926,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for addition");
+            throw new Error("invalid types to compare (<)");
 
     }
     private void lessThanEqual(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
@@ -962,7 +957,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
     }
     else
-        throw new Error("invalid types for addition");
+        throw new Error("invalid types to compare (<=)");
     }
     private void equality(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -979,7 +974,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
             semanticStack.push(pd);
         }
-        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE || firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
             pd.setAddress(allocatedAddress);
@@ -992,7 +987,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for addition");
+            throw new Error("invalid types to compare ==");
     }
     private void inequality(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -1010,7 +1005,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
             semanticStack.push(pd);
         }
-        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE || firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
             pd.setAddress(allocatedAddress);
@@ -1023,7 +1018,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for addition");
+            throw new Error("invalid types to compare !=");
     }
     private void biggerThanEqual(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -1053,10 +1048,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for addition");
+            throw new Error("invalid types to compare (>=)");
     }
-
-
     private void and(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
@@ -1089,7 +1082,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else
             throw new Error("Not valid type for bitwise operation");
     }
-
     private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
 
 
