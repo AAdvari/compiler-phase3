@@ -337,6 +337,8 @@ class Main {
         print("\n");
 
 
+        print("Nested While Loop\n");
+
         let int move, move1;
         move = 0;
         move1 = 0;
@@ -354,6 +356,38 @@ class Main {
             move++;
         pool
 
+
+        print("Nested for loop\n");
+
+        let int i,j;
+        i = 0;
+        for( i = 0 ; i < 10 ; i++ )
+
+           for( j = 0 ; j < 5 ; j++)
+                print(i);
+                print("  ");
+                print(j);
+                print("\n");
+           rof
+
+
+        rof
+
+
+        let int s1,s2,s3;
+        s1 = 2;
+        s2 = 3*4;
+        s3 = s2 - (s2%s1);
+
+        if( s1 > s3 ) then
+            print("s1 is less than s3\n");
+        else
+            print("s1 is not less than s3\n");
+        fi
+
+        if( s3 < 0 ) then
+            print("s3 is positive");
+        fi
 
     }
 }

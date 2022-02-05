@@ -17,7 +17,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
     public Map<String, Descriptor> globalDescriptors;
     public ArrayList<Descriptor> objectDescriptors;
 
-
     public CodeGeneratorImpl(LexicalAnalyser scanner) {
         this.scanner = scanner;
         semanticStack = new Stack<>();
@@ -150,10 +149,30 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "complete_while":
                 complete_while();
                 break;
+            case "start_be_for":
+                start_be_for();
+                break;
+            case "for":
+                for_dcl();
+                break;
+            case "for_assign_comp":
+                forAssignComp();
+                break;
+            case "complete_for":
+                complete_for();
+                break;
+            case "if":
+                if_dcl();
+                break;
+            case "complete_if":
+                complete_if();
+                break;
+            case "complete_else":
+            case "end_if":
+                end_if();
+
         }
     }
-
-
 
     // Regular Semantics:
     private void traceObject() {
@@ -174,7 +193,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             return;
         }
 
-        throw new Error("Variable can't be instantiated");
+        throw new Error( "Variable can't be instantiated");
 
     }
     private void declarePrimitiveVariable(PrimitiveDescriptor pd) {
@@ -197,7 +216,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
     /** We cannot specify memory for arrays in declaration,
        allocating memory is done in assignment section for arrays.
-
      */
     private void declareArray() {
         Descriptor arrayElementTypeDescriptor = semanticStack.peek();
@@ -444,7 +462,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
             throw new Error("len function for given type is not supported!");
     }
 
-
     // Assignments:
     private void assign(){
         Descriptor right = semanticStack.pop();
@@ -524,8 +541,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         String allocatedMemoryStart = helper.allocateMemory(leftArray);
         leftArray.setStartAddress(allocatedMemoryStart);
     }
-
-
 
     // 2-Operand Mathematical and Logical Semantics:
     private void twoConstantOperandCheckAndCalculate(String semantic,PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
@@ -1197,7 +1212,22 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else
             throw new Error("Not valid type for bitwise operation");
     }
-    private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+    private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Xor");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("xor","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("Not valid type for bitwise operation");
+    }
 
     // Unary Mathematical and Logical Semantics
     private void unaryOperation(String semantic){
@@ -1278,10 +1308,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
-    // Loops :
-
-
-
+    // While:
     private void start_be_while(){
         String startLabel = helper.labelMaker();
         helper.writeComment(false,"start of while loop with label" + startLabel);
@@ -1305,10 +1332,9 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
         helper.writeCommand("lw", "$t1", "0($t0)");
         helper.writeCommand("beqz", "$t1",endLabel);
-        Descriptor endLable = new Descriptor(endLabel);
-        semanticStack.push(endLable);
+        Descriptor endLabelDescriptor = new Descriptor(endLabel);
+        semanticStack.push(endLabelDescriptor);
     }
-
     private void complete_while(){
         String endLabel = semanticStack.pop().symName;
         String startLabel = semanticStack.pop().symName;
@@ -1317,6 +1343,111 @@ public class CodeGeneratorImpl implements CodeGenerator {
         helper.addLabel(endLabel+":");
     }
 
+    // For:
+    private void start_be_for(){
+        helper.writeComment(false,"for start");
+        String topOfBe = helper.labelMaker();
+        helper.addLabel(topOfBe+":");
+        Descriptor topOfBeLabel = new Descriptor(topOfBe);
+        semanticStack.push(topOfBeLabel);
+    }
+    private void for_dcl() {
+        Descriptor condition = semanticStack.pop();
+        if (condition instanceof PrimitiveDescriptor){
+            if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
+                throw new Error("expr should be a boolean type");
+            }
+        }
+        else {
+            throw new Error("Wrong expr declaration");
+        }
+
+
+        String topOfAssign = helper.labelMaker();
+
+        Descriptor topOfAssignLabel = new Descriptor(topOfAssign);
+        semanticStack.push(topOfAssignLabel);
+
+
+        String end = helper.labelMaker();
+        Descriptor endLabel = new Descriptor(end);
+        semanticStack.push(endLabel);
+
+        String topOfSts = helper.labelMaker();
+        Descriptor topOfStsLabel = new Descriptor(topOfSts);
+        semanticStack.push(topOfStsLabel);
+
+
+
+
+        helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
+        helper.writeCommand("lw", "$t1", "0($t0)");
+        helper.writeCommand("beqz", "$t1",end);
+        helper.writeCommand("j", topOfSts);
+        helper.addLabel(topOfAssign+":");
+
+
+    }
+    private void forAssignComp(){
+
+        Descriptor topOfSts = semanticStack.pop();
+        Descriptor endOfLoop = semanticStack.pop();
+        Descriptor topOfAssign = semanticStack.pop();
+        Descriptor topOfBe = semanticStack.pop();
+        helper.writeCommand("j", topOfBe.symName);
+        helper.addLabel(topOfSts.symName+ ":");
+
+        semanticStack.push(topOfAssign);
+        semanticStack.push(endOfLoop);
+    }
+    private void complete_for() {
+        Descriptor endOfLoop = semanticStack.pop();
+        Descriptor topOfAssign = semanticStack.pop();
+
+        helper.writeCommand("j", topOfAssign.symName);
+        helper.addLabel(endOfLoop.symName+":");
+    }
+
+    // If-Else:
+
+    private void if_dcl(){
+        helper.writeComment(false,"if dcl");
+
+        String elseStart = helper.labelMaker();
+        Descriptor elseStartLabel = new Descriptor(elseStart);
+
+
+        Descriptor condition = semanticStack.pop();
+        if (condition instanceof PrimitiveDescriptor){
+            if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
+                throw new Error("expr should be a boolean type");
+            }
+        }
+        else {
+            throw new Error("Wrong expr decleration");
+        }
+
+        semanticStack.push(elseStartLabel);
+
+        helper.writeCommand("la", "$t0", ((PrimitiveDescriptor) condition).address);
+        helper.writeCommand("lw", "$t1", "0($t0)");
+        helper.writeCommand("beqz", "$t1", elseStart);
+    }
+
+    private void complete_if(){
+        helper.writeComment(false,"if cjz");
+        String endOfElse = helper.labelMaker();
+        Descriptor endOfElseDescriptor = new Descriptor(endOfElse);
+
+
+        helper.writeCommand("j", endOfElse);
+        helper.addLabel(semanticStack.pop().symName+":");
+        semanticStack.push(endOfElseDescriptor);
+    }
+
+    private void end_if(){
+        helper.addLabel(semanticStack.pop().symName+":");
+    }
 
     // utils:
     private String stringTypeOfPrimitiveType(PrimitiveType pt){
