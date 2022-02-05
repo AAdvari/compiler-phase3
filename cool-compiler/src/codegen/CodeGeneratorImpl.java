@@ -120,6 +120,21 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "assign":
                 assign();
                 break;
+            case "divide_assign":
+                operateAndAssign("divide");
+                break;
+            case "multiply_assign":
+                operateAndAssign("multiply");
+                break;
+            case "add_assign":
+                operateAndAssign("add");
+                break;
+            case "subtract_assign":
+                operateAndAssign("subtract");
+                break;
+            case "mod_assign":
+                operateAndAssign("mod");
+                break;
             case "cast":
                 cast();
                 break;
@@ -458,6 +473,15 @@ public class CodeGeneratorImpl implements CodeGenerator {
         } else
             throw new Error("Invalid Types for assignment!");
     }
+    private void operateAndAssign(String semantic){
+        Descriptor right = semanticStack.pop();
+        Descriptor left = semanticStack.pop();
+        semanticStack.push(left);
+        semanticStack.push(left);
+        semanticStack.push(right);
+        twoOperandCheckAndCalculate(semantic);
+        assign();
+    }
     private void arrayDclComplete(){
         Descriptor rightExpr = semanticStack.pop();
         Descriptor rightType = semanticStack.pop();
@@ -492,11 +516,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         String allocatedMemoryStart = helper.allocateMemory(leftArray);
         leftArray.setStartAddress(allocatedMemoryStart);
     }
-    private void divideAssign(){}
-    private void multAssign(){}
-    private void subAssign(){}
-    private void addAssign(){}
-    private void modAssign(){}
 
 
 
