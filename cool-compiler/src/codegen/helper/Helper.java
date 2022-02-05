@@ -170,7 +170,7 @@ public class Helper {
         return null;
     }
     public String labelMaker() {
-        String s = "label" + currentLabel;
+        String s = "label" + currentLabel+":";
         currentLabel++;
         return  s;
     }

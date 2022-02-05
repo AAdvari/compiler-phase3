@@ -98,6 +98,14 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "while_complete":
                 complete_while();
                 break;
+
+            case "start_be_for":
+                start_be_for();
+                break;
+            case "for" :
+                fot_dcl();
+                break;
+
         }
     }
 
@@ -329,7 +337,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
   private void start_be_while(){
       startLabel = helper.labelMaker();
       helper.writeComment(false,"start of while loop with label" + startLabel);
-      startLabel += ":";
       helper.addLabel(startLabel);
   }
   private void while_dcl(){
@@ -356,5 +363,43 @@ public class CodeGeneratorImpl implements CodeGenerator {
       helper.writeCommand("j",startLabel);
       helper.addLabel(endLabel);
   }
+
+  String forStartLabel;
+  String forEndLabel;
+  String forAssignmentLabel;
+  private void start_be_for(){
+      helper.writeComment(false,"for start");
+      forStartLabel = helper.labelMaker();
+      helper.addLabel(forStartLabel);
+
+  }
+
+  private void fot_dcl() {
+      forEndLabel = helper.labelMaker();
+      helper.writeComment(false,"for jz");
+      Descriptor condition = semanticStack.pop();
+      if (condition instanceof PrimitiveDescriptor){
+          if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
+              throw new Error("expr should be a boolean type");
+          }
+      }
+      else {
+          throw new Error("Wrong expr decleration");
+      }
+      helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
+      helper.writeCommand("lw", "$t1", "0($t0)");
+      helper.writeCommand("beqz", "$t1",forEndLabel);
+
+
+  }
+
+  private void complete_for() {
+     helper.writeComment(false,"for jz");
+     forAssignmentLabel = helper.labelMaker();
+     helper.writeCommand("j",forAssignmentLabel);
+     helper.addLabel(forAssignmentLabel);
+     helper.writeCommand("j",forStartLabel);
+     helper.addLabel(forEndLabel);
+    }
 
 }
