@@ -1214,7 +1214,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
         negatedBoolean.setAddress(address);
         helper.writeComment(false,"Not operator");
         helper.writeCommand("lw", "$t0", pd.getAddress());
-        helper.writeCommand("nor","$t0","$t0","$t0");
+        helper.writeCommand("not","$t0","$t0");
+        helper.writeCommand("add","$t0","$t0", "2");
         helper.writeCommand("sw","$t0",address);
         semanticStack.push(negatedBoolean);
     }
