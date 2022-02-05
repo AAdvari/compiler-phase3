@@ -389,5 +389,13 @@ class Main {
             print("s3 is positive");
         fi
 
+        print( s2 | s1);
+        print("\n");
+
+        print( s2 & s1);
+        print("\n");
+
+        print( s2 ^ s1);
+        print("\n");
     }
 }

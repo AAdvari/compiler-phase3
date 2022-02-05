@@ -39,7 +39,6 @@ public class Main {
         LexicalAnalyser scanner = new LexicalAnalyser(new FileReader(file));
         CodeGeneratorImpl codeGenerator = new CodeGeneratorImpl(scanner);
         Parser parser = new Parser(scanner, codeGenerator, tablePath);
-
         try{
             parser.parse();
             StringBuilder generatedCode = codeGenerator.generateCode();
@@ -49,8 +48,6 @@ public class Main {
         } catch (Error e){
             System.out.println(e.getMessage());
             System.out.println("Parser confronted with syntactical errors.");
-//            System.out.println(codeGenerator.generateCode());
-
         }
     }
 }

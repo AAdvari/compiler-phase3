@@ -995,13 +995,28 @@ public class CodeGeneratorImpl implements CodeGenerator {
             helper.writeCommand("lw", "$t1", secondOperand.getAddress());
             helper.writeCommand("or","$t0","$t0","$t1");
             helper.writeCommand("sw", "$t0", allocatedAddress);
-
             semanticStack.push(pd);
         }
         else
             throw new Error( errorLiner() + "Not valid type for bitwise operation |");
     }
-    private void bitwiseXor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+    private void bitwiseXor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Bitwise Xor");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("xor","$t0","$t0","$t1");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error( errorLiner() + "Not valid type for bitwise operation");
+
+    }
     private void biggerThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);

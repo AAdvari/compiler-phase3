@@ -417,7 +417,7 @@ public class LexicalAnalyser implements Lexical {
 
   /* user code: */
     public int ICV;
-    public boolean logSymbols = true;
+    public boolean logSymbols = false;
     public String string = "";
     public Symbol currentSymbol;
             public String nextToken(){
