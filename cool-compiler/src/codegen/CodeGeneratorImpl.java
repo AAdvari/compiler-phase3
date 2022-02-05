@@ -402,4 +402,44 @@ public class CodeGeneratorImpl implements CodeGenerator {
      helper.addLabel(forEndLabel);
     }
 
+
+    private void if_dcl(){
+      helper.writeComment(false,"if dcl");
+
+      String ifStartLabel = helper.labelMaker();
+      Descriptor ifStartDscp = new Descriptor(ifStartLabel);
+
+      String ifEndLabel = helper.labelMaker();
+      Descriptor ifEndDscp = new Descriptor(ifEndLabel);
+
+      Descriptor condition = semanticStack.peek();
+        if (condition instanceof PrimitiveDescriptor){
+            if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
+                throw new Error("expr should be a boolean type");
+            }
+        }
+        else {
+            throw new Error("Wrong expr decleration");
+        }
+
+        semanticStack.push(ifStartDscp);
+
+
+        semanticStack.push(ifEndDscp);
+        helper.writeCommand("la", "$t0", ((PrimitiveDescriptor) condition).address);
+        helper.writeCommand("lw", "$t1", "0($t0)");
+        helper.writeCommand("beqz", "$t1", ifStartLabel);
+    }
+
+    private void complete_if(){
+      helper.writeComment(false,"if cjz");
+      Descriptor ifEndDscp = semanticStack.pop();
+      Descriptor ifStartLoop = semanticStack.pop();
+
+      Descriptor condition = semanticStack.peek();
+      helper.addLabel(ifStartLoop.symName);
+
+
+    }
+
 }
