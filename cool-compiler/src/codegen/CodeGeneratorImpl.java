@@ -40,7 +40,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor falseBool = new PrimitiveDescriptor("false", "", PrimitiveType.BOOLEAN_PRIMITIVE);
         String trueBoolAddress = helper.allocateMemory(trueBool, String.valueOf(1));
         String falseBoolAddress = helper.allocateMemory(trueBool, String.valueOf(0));
-
         trueBool.setAddress(trueBoolAddress);
         falseBool.setAddress(falseBoolAddress);
 
@@ -76,6 +75,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "and":
             case "or":
                 twoOperandCheckAndCalculate(sem);
+                break;
             case "not":
             case "minus_minus":
             case "plus_plus":
@@ -339,71 +339,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(),
                 arrayDescriptor.getStartAddress()+"($t7)", elementDSCP.type);
-        System.out.println("elemType: " + elementDSCP.type);
         semanticStack.push(pd);
-    }
-    private void assign(){
-        Descriptor right = semanticStack.pop();
-        Descriptor left = semanticStack.pop();
-        if (!left.getClass().equals(right.getClass())){
-            throw new Error("Assigning inconsistent types.");
-        }
-
-        if (left instanceof ArrayDescriptor){
-            ArrayDescriptor leftArray = (ArrayDescriptor) left;
-            ArrayDescriptor rightArray = (ArrayDescriptor) right;
-            leftArray.setSize(rightArray.getSize());
-            leftArray.setStartAddress(rightArray.getStartAddress());
-        }
-        else if (left instanceof PrimitiveDescriptor){
-            PrimitiveDescriptor leftPrimitive = (PrimitiveDescriptor) left;
-            PrimitiveDescriptor rightPrimitive = (PrimitiveDescriptor) right;
-            if (leftPrimitive.type != rightPrimitive.type)
-                throw new Error("assigning " + rightPrimitive.type + " to " + leftPrimitive.type + " is illegal");
-            if (leftPrimitive.type == PrimitiveType.STRING_PRIMITIVE){
-                if (leftPrimitive.isConstant())
-                    throw new Error("Assignment to a constant!");
-                else {
-                    leftPrimitive.setAddress(rightPrimitive.getAddress());
-                }
-            }
-            else {
-                helper.assignAddressLabelsValues(leftPrimitive.getAddress(), rightPrimitive.getAddress(), leftPrimitive.type);
-            }
-        } else
-            throw new Error("Invalid Types for assignment!");
-    }
-    private void arrayDclComplete(){
-        Descriptor rightExpr = semanticStack.pop();
-        Descriptor rightType = semanticStack.pop();
-        Descriptor left = semanticStack.pop();
-
-        if (!(left instanceof ArrayDescriptor))
-            throw new Error("Left value is not an array type!");
-        ArrayDescriptor leftArray = (ArrayDescriptor) left;
-
-        if (!(rightType instanceof PrimitiveDescriptor))
-            throw new Error("invalid Element type for array");
-        PrimitiveDescriptor pdRight = (PrimitiveDescriptor) rightExpr;
-        if (pdRight.type != PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("invalid type for array size");
-
-        if (!leftArray.getElementType().getClass().equals(rightType.getClass()))
-            throw new Error("Inconsistent Array Element Types!");
-
-        // rightExpr has to be a constant PrimitiveDescriptor
-        PrimitiveDescriptor rightExprPd = (PrimitiveDescriptor) rightExpr;
-        if (!rightExprPd.isConstant())
-            throw new Error("Dynamic array size not supported!");
-
-        int size = Integer.parseInt(rightExpr.symName);
-        if (size <= 0)
-            throw new Error("Size of an array should be a natural number!");
-
-        leftArray.setSize(size);
-
-        String allocatedMemoryStart = helper.allocateMemory(leftArray);
-        leftArray.setStartAddress(allocatedMemoryStart);
     }
     private void cast(){
         PrimitiveDescriptor expr = (PrimitiveDescriptor) semanticStack.pop();
@@ -484,7 +420,80 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
 
 
-    // Mathematical Semantics:
+    // Assignments:
+    private void assign(){
+        Descriptor right = semanticStack.pop();
+        Descriptor left = semanticStack.pop();
+        if (!left.getClass().equals(right.getClass())){
+            throw new Error("Assigning inconsistent types.");
+        }
+
+        if (left instanceof ArrayDescriptor){
+            ArrayDescriptor leftArray = (ArrayDescriptor) left;
+            ArrayDescriptor rightArray = (ArrayDescriptor) right;
+            PrimitiveType leftArrayElemType = ((PrimitiveDescriptor) leftArray.elementType).type;
+            PrimitiveType rightArrayElemType = ((PrimitiveDescriptor) rightArray.elementType).type;
+            if (leftArrayElemType != rightArrayElemType)
+                throw new Error("Cant assign array with "+rightArrayElemType+" element type to array with "+leftArrayElemType+" element type");
+            leftArray.setSize(rightArray.getSize());
+            leftArray.setStartAddress(rightArray.getStartAddress());
+        }
+        else if (left instanceof PrimitiveDescriptor){
+            PrimitiveDescriptor leftPrimitive = (PrimitiveDescriptor) left;
+            PrimitiveDescriptor rightPrimitive = (PrimitiveDescriptor) right;
+            if (leftPrimitive.type != rightPrimitive.type)
+                throw new Error("assigning " + rightPrimitive.type + " to " + leftPrimitive.type + " is illegal");
+            if (leftPrimitive.type == PrimitiveType.STRING_PRIMITIVE){
+                if (leftPrimitive.isConstant())
+                    throw new Error("Assignment to a constant!");
+                else {
+                    leftPrimitive.setAddress(rightPrimitive.getAddress());
+                }
+            }
+            else {
+                helper.assignAddressLabelsValues(leftPrimitive.getAddress(), rightPrimitive.getAddress(), leftPrimitive.type);
+            }
+        } else
+            throw new Error("Invalid Types for assignment!");
+    }
+    private void arrayDclComplete(){
+        Descriptor rightExpr = semanticStack.pop();
+        Descriptor rightType = semanticStack.pop();
+        Descriptor left = semanticStack.pop();
+
+        if (!(left instanceof ArrayDescriptor))
+            throw new Error("Left value is not an array type!");
+        ArrayDescriptor leftArray = (ArrayDescriptor) left;
+
+        if (!(rightType instanceof PrimitiveDescriptor))
+            throw new Error("invalid Element type for array");
+        PrimitiveDescriptor pdRight = (PrimitiveDescriptor) rightExpr;
+        if (pdRight.type != PrimitiveType.INTEGER_PRIMITIVE)
+            throw new Error("invalid type for array size");
+
+        PrimitiveType leftArrayElemType = ((PrimitiveDescriptor) leftArray.elementType).type;
+        PrimitiveType rightElemType = ((PrimitiveDescriptor) rightType).type;
+        if (leftArrayElemType != rightElemType)
+            throw new Error("cant assign array with element type "+rightElemType+" to array with element type " + leftArrayElemType);
+
+        // rightExpr has to be a constant PrimitiveDescriptor
+        PrimitiveDescriptor rightExprPd = (PrimitiveDescriptor) rightExpr;
+        if (!rightExprPd.isConstant())
+            throw new Error("Dynamic array size not supported!");
+
+        int size = Integer.parseInt(rightExpr.symName);
+        if (size <= 0)
+            throw new Error("Size of an array should be a natural number!");
+
+        leftArray.setSize(size);
+
+        String allocatedMemoryStart = helper.allocateMemory(leftArray);
+        leftArray.setStartAddress(allocatedMemoryStart);
+    }
+
+
+
+    // 2-Operand Mathematical and Logical Semantics:
     private void twoConstantOperandCheckAndCalculate(String semantic,PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         PrimitiveType type = firstOperand.type;
         String resValue;
@@ -509,13 +518,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "subtract":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) - Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) - Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
                 else if (type == PrimitiveType.REAL_PRIMITIVE){
                     resValue = String.valueOf(
-                            Float.parseFloat(firstOperand.symName) - Float.parseFloat(secondOperand.symName)
+                            Float.parseFloat(secondOperand.symName) - Float.parseFloat(firstOperand.symName)
                     );
                     resType = PrimitiveType.REAL_PRIMITIVE;
                 }
@@ -541,7 +550,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "mod":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) % Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) % Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
@@ -553,13 +562,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     throw new Error("Can't divide by zero");
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) / Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) / Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
                 else if (type == PrimitiveType.REAL_PRIMITIVE){
                     resValue = String.valueOf(
-                            Float.parseFloat(firstOperand.symName) / Float.parseFloat(secondOperand.symName)
+                            Float.parseFloat(secondOperand.symName) / Float.parseFloat(firstOperand.symName)
                     );
                     resType = PrimitiveType.REAL_PRIMITIVE;
                 }
@@ -599,13 +608,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "bigger_than":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) > Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) > Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else if (type == PrimitiveType.REAL_PRIMITIVE){
                     resValue = String.valueOf(
-                            Float.parseFloat(firstOperand.symName) > Float.parseFloat(secondOperand.symName)
+                            Float.parseFloat(secondOperand.symName) > Float.parseFloat(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
@@ -615,13 +624,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "bigger_than_equal":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) >= Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) >= Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else if (type == PrimitiveType.REAL_PRIMITIVE){
                     resValue = String.valueOf(
-                            Float.parseFloat(firstOperand.symName) >= Float.parseFloat(secondOperand.symName)
+                            Float.parseFloat(secondOperand.symName) >= Float.parseFloat(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
@@ -631,13 +640,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "less_than":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) < Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) < Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else if (type == PrimitiveType.REAL_PRIMITIVE){
                     resValue = String.valueOf(
-                            Float.parseFloat(firstOperand.symName) < Float.parseFloat(secondOperand.symName)
+                            Float.parseFloat(secondOperand.symName) < Float.parseFloat(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
@@ -647,7 +656,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "less_than_equal":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
-                            Integer.parseInt(firstOperand.symName) <= Integer.parseInt(secondOperand.symName)
+                            Integer.parseInt(secondOperand.symName) <= Integer.parseInt(firstOperand.symName)
                     );
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
@@ -700,6 +709,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 throw new Error("Operation is not supported");
         }
 
+        if (globalDescriptors.containsKey(resValue)){
+            semanticStack.push(globalDescriptors.get(resValue));
+            return;
+        }
         PrimitiveDescriptor pd = new PrimitiveDescriptor(resValue, "", resType);
         String allocatedAddress = helper.allocateMemory(pd, resValue);
         pd.setAddress(allocatedAddress);
@@ -773,8 +786,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         }
     }
-
-
     private void add(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
@@ -831,9 +842,81 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else
             throw new Error("invalid types for Subtraction");
     }
-    private void multiply(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
-    private void divide(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
-    private void mod(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
+    private void multiply(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Real Multiplication");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("mul.s","$f0","$f1","$f0");
+            helper.writeCommand("s.s", "$f0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Integer Multiplication");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("mult","$t0","$t1");
+            helper.writeCommand("mflo","$t0");
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for Multiplication");
+    }
+    private void divide(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Real Division");
+            helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
+            helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
+            helper.writeCommand("div.s","$f0","$f1","$f0");
+            helper.writeCommand("s.s", "$f0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Integer Division");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("div","$t1","$t0");
+            helper.writeCommand("mflo","$t0"); //q
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for Subtraction");
+    }
+    private void mod(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
+        if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
+            PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
+            String allocatedAddress = helper.allocateMemory(pd);
+            pd.setAddress(allocatedAddress);
+            helper.writeComment(false,"Integer Modulo");
+            helper.writeCommand("lw", "$t0", firstOperand.getAddress());
+            helper.writeCommand("lw", "$t1", secondOperand.getAddress());
+            helper.writeCommand("div","$t1","$t0");
+            helper.writeCommand("mfhi","$t0"); //r
+            helper.writeCommand("sw", "$t0", allocatedAddress);
+
+            semanticStack.push(pd);
+        }
+        else
+            throw new Error("invalid types for Subtraction");
+    }
     private void bitwiseAnd(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", firstOperand.type);
@@ -1084,7 +1167,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
     private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
 
-
+    // Unary Mathematical and Logical Semantics
     // utils:
     private String stringTypeOfPrimitiveType(PrimitiveType pt){
         String type;

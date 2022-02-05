@@ -1,7 +1,6 @@
 package codegen.dscps;
 
 public class PrimitiveDescriptor extends Descriptor {
-    // if address equals to constant, then the symName is the value !
     public PrimitiveType type;
     public String address;
     private boolean isConstant;
@@ -16,7 +15,7 @@ public class PrimitiveDescriptor extends Descriptor {
         return address;
     }
     public void activeIsConstant(){
-        isConstant = true;
+       isConstant = true;
     }
     public boolean isConstant(){
         return isConstant;
