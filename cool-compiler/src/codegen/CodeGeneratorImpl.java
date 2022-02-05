@@ -80,7 +80,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "minus_minus":
             case "plus_plus":
             case "unary_minus":
-                System.out.println("Not Implemented Yet");
+                unaryOperation(sem);
                 break;
             case "read_string":
                 read_string();
@@ -490,6 +490,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         String allocatedMemoryStart = helper.allocateMemory(leftArray);
         leftArray.setStartAddress(allocatedMemoryStart);
     }
+    private void divideAssign(){}
+    private void multAssign(){}
+    private void subAssign(){}
+    private void addAssign(){}
+    private void modAssign(){}
 
 
 
@@ -1168,6 +1173,81 @@ public class CodeGeneratorImpl implements CodeGenerator {
     private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
 
     // Unary Mathematical and Logical Semantics
+    private void unaryOperation(String semantic){
+        Descriptor descriptor = semanticStack.pop();
+        if (!(descriptor instanceof PrimitiveDescriptor))
+            throw new Error("Unary Operators only accept primitives.");
+        PrimitiveDescriptor pd = (PrimitiveDescriptor) descriptor;
+        switch (semantic){
+            case "unary_minus":
+                if (pd.isConstant() || (pd.type != PrimitiveType.INTEGER_PRIMITIVE && pd.type != PrimitiveType.REAL_PRIMITIVE))
+                    throw new Error("invalid type for unary minus operator");
+                unaryMinus(pd);
+                break;
+            case "not":
+                if (pd.type != PrimitiveType.BOOLEAN_PRIMITIVE)
+                    throw new Error("not operator is only applicable on booleans!");
+                not(pd);
+                break;
+
+            case "minus_minus":
+            case "plus_plus":
+            case "expr_plus_plus":
+            case "expr_minus_minus":
+                if (pd.type != PrimitiveType.REAL_PRIMITIVE && pd.type!= PrimitiveType.INTEGER_PRIMITIVE)
+                    throw new Error(semantic + " is only applicable on REALs and INTEGERs!");
+                if (pd.isConstant())
+                    throw new Error(semantic + " is not applicable on constants");
+                minusMinusOrPlusPlus(pd, semantic);
+                break;
+            default:
+                throw new Error("can't Recognize the operation");
+
+        }
+
+    }
+    private void not(PrimitiveDescriptor pd){
+        PrimitiveDescriptor negatedBoolean = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
+        String address = helper.allocateMemory(negatedBoolean);
+        negatedBoolean.setAddress(address);
+        helper.writeComment(false,"Not operator");
+        helper.writeCommand("lw", "$t0", pd.getAddress());
+        helper.writeCommand("nor","$t0","$t0","$t0");
+        helper.writeCommand("sw","$t0",address);
+        semanticStack.push(negatedBoolean);
+    }
+    private void minusMinusOrPlusPlus(PrimitiveDescriptor pd, String op){
+        String addingVal = op.contains("plus_plus") ?
+                pd.type == PrimitiveType.REAL_PRIMITIVE ? "1.0" : "1"
+                    :
+                pd.type == PrimitiveType.REAL_PRIMITIVE ? "-1.0" : "-1" ;
+
+        PrimitiveDescriptor oneDescriptor = new PrimitiveDescriptor(addingVal, "" , pd.type);
+        oneDescriptor.setAddress(helper.allocateMemory(oneDescriptor, addingVal));
+
+        semanticStack.push(pd);
+        add(pd, oneDescriptor);
+        assign();
+        if (op.contains("expr"))
+            semanticStack.push(pd);
+    }
+    private void unaryMinus(PrimitiveDescriptor pd){
+        if(pd.type == PrimitiveType.REAL_PRIMITIVE){
+            helper.writeComment(false,"Negating real");
+            helper.writeCommand("l.s", "$f0", pd.getAddress());
+            helper.writeCommand("neg.s","$f0","$f0");
+            helper.writeCommand("s.s","$f0",pd.getAddress());
+        }
+        else if(pd.type == PrimitiveType.INTEGER_PRIMITIVE){
+            helper.writeComment(false,"negating integer");
+            helper.writeCommand("lw","$t0", pd.getAddress());
+            helper.writeCommand("sub","$t0", "$zero", "$t0");
+            helper.writeCommand("sw","$t0", pd.getAddress());
+        }
+        else
+            throw new Error("Invalid primitive for unaryMinus!");
+
+    }
     // utils:
     private String stringTypeOfPrimitiveType(PrimitiveType pt){
         String type;
