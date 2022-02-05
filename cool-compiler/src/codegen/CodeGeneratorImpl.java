@@ -50,7 +50,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
         globalDescriptors.put("false", falseBool);
         globalDescriptors.put("void", null);
     }
-
+    private String errorLiner(){
+        return
+        "on line " + scanner.currentSymbol.line + " near " + scanner.currentSymbol.getToken() + " error:\n";
+    }
     @Override
     public void doSemantic(String sem) {
         switch (sem) {
@@ -193,7 +196,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             return;
         }
 
-        throw new Error( "Variable can't be instantiated");
+        throw new Error( errorLiner() +  "Variable can't be instantiated");
 
     }
     private void declarePrimitiveVariable(PrimitiveDescriptor pd) {
@@ -202,7 +205,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 
         if (globalDescriptors.containsKey(token)
         || currentMethod.symTable.containsKey(token))
-            throw new Error("Identifier " + token + " has been declared before!");
+            throw new Error( errorLiner() + "Identifier " + token + " has been declared before!");
 
         String type = stringTypeOfPrimitiveType(pd.type);
 
@@ -226,7 +229,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         }
 
         if (isDeclaredToken(creatingArrayName))
-            throw new Error("Identifier is declared before!");
+            throw new Error( errorLiner() + "Identifier is declared before!");
 
         ArrayDescriptor arrayDescriptor = new ArrayDescriptor(creatingArrayName,arrayElementTypeDescriptor);
         currentMethod.addVariable(creatingArrayName, arrayDescriptor);
@@ -261,7 +264,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
 //            System.out.println("Pushing Class Fields is not implemented yet");
 //        }
         else
-            throw new Error("Literal "+ symName + " is not declared within current scope!");
+            throw new Error( errorLiner() + "Literal "+ symName + " is not declared within current scope!");
     }
     private void push_constant(String token, TokenType type) {
         if (globalDescriptors.containsKey(token)) {
@@ -281,7 +284,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 constantType = PrimitiveType.STRING_PRIMITIVE;
                 break;
             default:
-                throw new Error("Not a valid constant type");
+                throw new Error( errorLiner() + "Not a valid constant type");
         }
         PrimitiveDescriptor pd = new PrimitiveDescriptor(token, "", constantType);
         pd.address = helper.allocateMemory(pd, token);
@@ -301,7 +304,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
     private void print_string(PrimitiveDescriptor pd){
         if (pd.type != PrimitiveType.STRING_PRIMITIVE)
-            throw new Error("Expected String but got "+ pd.type);
+            throw new Error( errorLiner() + "Expected String but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
         helper.writeCommand("li","$v0","4");
         helper.writeCommand("la","$a0",pd.getAddress());
@@ -319,7 +322,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
     private void print_real(PrimitiveDescriptor pd){
         if (pd.type != PrimitiveType.REAL_PRIMITIVE)
-            throw new Error("Expected Real type but got "+ pd.type);
+            throw new Error( errorLiner() + "Expected Real type but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
         helper.writeCommand("li","$v0","2");
         helper.writeCommand("l.s","$f12",pd.getAddress());
@@ -327,7 +330,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
     }
     private void print_int(PrimitiveDescriptor pd){
         if (pd.type != PrimitiveType.INTEGER_PRIMITIVE && pd.type != PrimitiveType.BOOLEAN_PRIMITIVE)
-            throw new Error("Expected Integer or boolean but got "+ pd.type);
+            throw new Error( errorLiner() + "Expected Integer or boolean but got "+ pd.type);
         helper.writeComment(false,"Printing " + pd.symName );
         helper.writeCommand("li","$v0","1");
         helper.writeCommand("lw","$a0",pd.getAddress());
@@ -341,7 +344,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor indexPd = (PrimitiveDescriptor) index;
 
         if (indexPd.type != PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("Indices must be integers.");
+            throw new Error( errorLiner() + "Indices must be integers.");
 
         PrimitiveDescriptor element = new PrimitiveDescriptor(helper.getTempName(), "",
                 ((PrimitiveDescriptor)arrayDescriptor.getElementType()).type);
@@ -371,7 +374,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor indexPd = (PrimitiveDescriptor) index;
 
         if (indexPd.type!= PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("Indices must be integers.");
+            throw new Error( errorLiner() + "Indices must be integers.");
 
         PrimitiveDescriptor elementDSCP = (PrimitiveDescriptor) arrayDescriptor.elementType;
 
@@ -389,7 +392,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor castType = (PrimitiveDescriptor) semanticStack.pop();
 
         if (castType.type != PrimitiveType.INTEGER_PRIMITIVE && castType.type != PrimitiveType.REAL_PRIMITIVE)
-            throw new Error("Invalid Casting Type!");
+            throw new Error( errorLiner() + "Invalid Casting Type!");
 
         if (castType.type == expr.type){
             semanticStack.push(expr);
@@ -459,7 +462,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(val);
         }
         else
-            throw new Error("len function for given type is not supported!");
+            throw new Error( errorLiner() + "len function for given type is not supported!");
     }
 
     // Assignments:
@@ -467,7 +470,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         Descriptor right = semanticStack.pop();
         Descriptor left = semanticStack.pop();
         if (!left.getClass().equals(right.getClass())){
-            throw new Error("Assigning inconsistent types.");
+            throw new Error( errorLiner() + "Assigning inconsistent types.");
         }
 
         if (left instanceof ArrayDescriptor){
@@ -476,7 +479,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             PrimitiveType leftArrayElemType = ((PrimitiveDescriptor) leftArray.elementType).type;
             PrimitiveType rightArrayElemType = ((PrimitiveDescriptor) rightArray.elementType).type;
             if (leftArrayElemType != rightArrayElemType)
-                throw new Error("Cant assign array with "+rightArrayElemType+" element type to array with "+leftArrayElemType+" element type");
+                throw new Error( errorLiner() + "Cant assign array with "+rightArrayElemType+" element type to array with "+leftArrayElemType+" element type");
             leftArray.setSize(rightArray.getSize());
             leftArray.setStartAddress(rightArray.getStartAddress());
         }
@@ -484,10 +487,10 @@ public class CodeGeneratorImpl implements CodeGenerator {
             PrimitiveDescriptor leftPrimitive = (PrimitiveDescriptor) left;
             PrimitiveDescriptor rightPrimitive = (PrimitiveDescriptor) right;
             if (leftPrimitive.type != rightPrimitive.type)
-                throw new Error("assigning " + rightPrimitive.type + " to " + leftPrimitive.type + " is illegal");
+                throw new Error( errorLiner() + "assigning " + rightPrimitive.type + " to " + leftPrimitive.type + " is illegal");
             if (leftPrimitive.type == PrimitiveType.STRING_PRIMITIVE){
                 if (leftPrimitive.isConstant())
-                    throw new Error("Assignment to a constant!");
+                    throw new Error( errorLiner() + "Assignment to a constant!");
                 else {
                     leftPrimitive.setAddress(rightPrimitive.getAddress());
                 }
@@ -496,7 +499,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                 helper.assignAddressLabelsValues(leftPrimitive.getAddress(), rightPrimitive.getAddress(), leftPrimitive.type);
             }
         } else
-            throw new Error("Invalid Types for assignment!");
+            throw new Error( errorLiner() + "Invalid Types for assignment!");
     }
     private void operateAndAssign(String semantic){
         Descriptor right = semanticStack.pop();
@@ -513,28 +516,28 @@ public class CodeGeneratorImpl implements CodeGenerator {
         Descriptor left = semanticStack.pop();
 
         if (!(left instanceof ArrayDescriptor))
-            throw new Error("Left value is not an array type!");
+            throw new Error( errorLiner() + "Left value is not an array type!");
         ArrayDescriptor leftArray = (ArrayDescriptor) left;
 
         if (!(rightType instanceof PrimitiveDescriptor))
-            throw new Error("invalid Element type for array");
+            throw new Error( errorLiner() + "invalid Element type for array");
         PrimitiveDescriptor pdRight = (PrimitiveDescriptor) rightExpr;
         if (pdRight.type != PrimitiveType.INTEGER_PRIMITIVE)
-            throw new Error("invalid type for array size");
+            throw new Error( errorLiner() + "invalid type for array size");
 
         PrimitiveType leftArrayElemType = ((PrimitiveDescriptor) leftArray.elementType).type;
         PrimitiveType rightElemType = ((PrimitiveDescriptor) rightType).type;
         if (leftArrayElemType != rightElemType)
-            throw new Error("cant assign array with element type "+rightElemType+" to array with element type " + leftArrayElemType);
+            throw new Error( errorLiner() + "cant assign array with element type "+rightElemType+" to array with element type " + leftArrayElemType);
 
         // rightExpr has to be a constant PrimitiveDescriptor
         PrimitiveDescriptor rightExprPd = (PrimitiveDescriptor) rightExpr;
         if (!rightExprPd.isConstant())
-            throw new Error("Dynamic array size not supported!");
+            throw new Error( errorLiner() + "Dynamic array size not supported!");
 
         int size = Integer.parseInt(rightExpr.symName);
         if (size <= 0)
-            throw new Error("Size of an array should be a natural number!");
+            throw new Error( errorLiner() + "Size of an array should be a natural number!");
 
         leftArray.setSize(size);
 
@@ -562,7 +565,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.REAL_PRIMITIVE;
                 }
                 else
-                    throw new Error("Addition is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Addition is not applicable on given operand types.");
                 break;
             case "subtract":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -578,7 +581,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.REAL_PRIMITIVE;
                 }
                 else
-                    throw new Error("Subtraction is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Subtraction is not applicable on given operand types.");
                 break;
             case "multiply":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -594,7 +597,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.REAL_PRIMITIVE;
                 }
                 else
-                    throw new Error("Multiplication is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Multiplication is not applicable on given operand types.");
                 break;
             case "mod":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -604,11 +607,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
                 else
-                    throw new Error("Mod is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Mod is not applicable on given operand types.");
                 break;
             case "divide":
                 if (secondOperand.symName.charAt(0) == '0')
-                    throw new Error("Can't divide by zero");
+                    throw new Error( errorLiner() + "Can't divide by zero");
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
                     resValue = String.valueOf(
                             Integer.parseInt(secondOperand.symName) / Integer.parseInt(firstOperand.symName)
@@ -622,7 +625,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.REAL_PRIMITIVE;
                 }
                 else
-                    throw new Error("Division is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Division is not applicable on given operand types.");
                 break;
             case "bitwise_and":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -632,7 +635,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
                 else
-                    throw new Error("Bitwise and  is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Bitwise and  is not applicable on given operand types.");
                 break;
             case "bitwise_or":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -642,7 +645,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
                 else
-                    throw new Error("Bitwise or is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Bitwise or is not applicable on given operand types.");
                 break;
             case "bitwise_xor":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -652,7 +655,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.INTEGER_PRIMITIVE;
                 }
                 else
-                    throw new Error("Bitwise xor  is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Bitwise xor  is not applicable on given operand types.");
                 break;
             case "bigger_than":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -668,7 +671,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else
-                    throw new Error("biggerThan operator is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "biggerThan operator is not applicable on given operand types.");
                 break;
             case "bigger_than_equal":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -684,7 +687,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else
-                    throw new Error("biggerThanEqual operator is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "biggerThanEqual operator is not applicable on given operand types.");
                 break;
             case "less_than":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -700,7 +703,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else
-                    throw new Error("lessThan operator is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "lessThan operator is not applicable on given operand types.");
                 break;
             case "less_than_equal":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -716,7 +719,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else
-                    throw new Error("lessThanEqual operator is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "lessThanEqual operator is not applicable on given operand types.");
                 break;
             case "equality":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE || type == PrimitiveType.BOOLEAN_PRIMITIVE){
@@ -732,7 +735,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else
-                    throw new Error("Equality operator is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Equality operator is not applicable on given operand types.");
                 break;
             case "inequality":
                 if (type == PrimitiveType.INTEGER_PRIMITIVE || type == PrimitiveType.BOOLEAN_PRIMITIVE){
@@ -748,14 +751,14 @@ public class CodeGeneratorImpl implements CodeGenerator {
                     resType = PrimitiveType.BOOLEAN_PRIMITIVE;
                 }
                 else
-                    throw new Error("Inequality operator is not applicable on given operand types.");
+                    throw new Error( errorLiner() + "Inequality operator is not applicable on given operand types.");
                 break;
             case "and":
             case "or":
             case "xor":
-                throw new Error("Invalid boolean operation!");
+                throw new Error( errorLiner() + "Invalid boolean operation!");
             default:
-                throw new Error("Operation is not supported");
+                throw new Error( errorLiner() + "Operation is not supported");
         }
 
         if (globalDescriptors.containsKey(resValue)){
@@ -773,7 +776,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         PrimitiveDescriptor firstOperand = (PrimitiveDescriptor) semanticStack.pop();
         PrimitiveDescriptor secondOperand = (PrimitiveDescriptor) semanticStack.pop();
         if (firstOperand.type != secondOperand.type){
-            throw new Error("Inconsistent types for " + semantic + " operation");
+            throw new Error( errorLiner() + "Inconsistent types for " + semantic + " operation");
         }
         if (firstOperand.isConstant() && secondOperand.isConstant()){
             twoConstantOperandCheckAndCalculate(semantic, firstOperand, secondOperand);
@@ -861,7 +864,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for addition");
+            throw new Error( errorLiner() + "invalid types for addition");
     }
     private void subtract(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -889,7 +892,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for Subtraction");
+            throw new Error( errorLiner() + "invalid types for Subtraction");
     }
     private void multiply(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -918,7 +921,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for Multiplication");
+            throw new Error( errorLiner() + "invalid types for Multiplication");
     }
     private void divide(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -947,7 +950,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for Subtraction");
+            throw new Error( errorLiner() + "invalid types for Subtraction");
     }
     private void mod(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -964,7 +967,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types for Subtraction");
+            throw new Error( errorLiner() + "invalid types for Subtraction");
     }
     private void bitwiseAnd(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -980,7 +983,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation &");
+            throw new Error( errorLiner() + "Not valid type for bitwise operation &");
     }
     private void bitwiseOr(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.INTEGER_PRIMITIVE){
@@ -996,7 +999,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation |");
+            throw new Error( errorLiner() + "Not valid type for bitwise operation |");
     }
     private void bitwiseXor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){}
     private void biggerThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
@@ -1026,7 +1029,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types to compare (>)");
+            throw new Error( errorLiner() + "invalid types to compare (>)");
     }
     private void lessThan(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -1056,7 +1059,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types to compare (<)");
+            throw new Error( errorLiner() + "invalid types to compare (<)");
 
     }
     private void lessThanEqual(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
@@ -1087,7 +1090,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
     }
     else
-        throw new Error("invalid types to compare (<=)");
+        throw new Error( errorLiner() + "invalid types to compare (<=)");
     }
     private void equality(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -1117,7 +1120,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types to compare ==");
+            throw new Error( errorLiner() + "invalid types to compare ==");
     }
     private void inequality(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -1148,7 +1151,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types to compare !=");
+            throw new Error( errorLiner() + "invalid types to compare !=");
     }
     private void biggerThanEqual(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.REAL_PRIMITIVE){
@@ -1178,7 +1181,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("invalid types to compare (>=)");
+            throw new Error( errorLiner() + "invalid types to compare (>=)");
     }
     private void and(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
@@ -1194,7 +1197,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation");
+            throw new Error( errorLiner() + "Not valid type for bitwise operation");
     }
     private void or(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
@@ -1210,7 +1213,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation");
+            throw new Error( errorLiner() + "Not valid type for bitwise operation");
     }
     private void xor(PrimitiveDescriptor firstOperand, PrimitiveDescriptor secondOperand){
         if (firstOperand.type == PrimitiveType.BOOLEAN_PRIMITIVE){
@@ -1226,24 +1229,24 @@ public class CodeGeneratorImpl implements CodeGenerator {
             semanticStack.push(pd);
         }
         else
-            throw new Error("Not valid type for bitwise operation");
+            throw new Error( errorLiner() + "Not valid type for bitwise operation");
     }
 
     // Unary Mathematical and Logical Semantics
     private void unaryOperation(String semantic){
         Descriptor descriptor = semanticStack.pop();
         if (!(descriptor instanceof PrimitiveDescriptor))
-            throw new Error("Unary Operators only accept primitives.");
+            throw new Error( errorLiner() + "Unary Operators only accept primitives.");
         PrimitiveDescriptor pd = (PrimitiveDescriptor) descriptor;
         switch (semantic){
             case "unary_minus":
                 if (pd.isConstant() || (pd.type != PrimitiveType.INTEGER_PRIMITIVE && pd.type != PrimitiveType.REAL_PRIMITIVE))
-                    throw new Error("invalid type for unary minus operator");
+                    throw new Error( errorLiner() + "invalid type for unary minus operator");
                 unaryMinus(pd);
                 break;
             case "not":
                 if (pd.type != PrimitiveType.BOOLEAN_PRIMITIVE)
-                    throw new Error("not operator is only applicable on booleans!");
+                    throw new Error( errorLiner() + "not operator is only applicable on booleans!");
                 not(pd);
                 break;
 
@@ -1252,13 +1255,13 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "expr_plus_plus":
             case "expr_minus_minus":
                 if (pd.type != PrimitiveType.REAL_PRIMITIVE && pd.type!= PrimitiveType.INTEGER_PRIMITIVE)
-                    throw new Error(semantic + " is only applicable on REALs and INTEGERs!");
+                    throw new Error( errorLiner() + semantic + " is only applicable on REALs and INTEGERs!");
                 if (pd.isConstant())
-                    throw new Error(semantic + " is not applicable on constants");
+                    throw new Error( errorLiner() + semantic + " is not applicable on constants");
                 minusMinusOrPlusPlus(pd, semantic);
                 break;
             default:
-                throw new Error("can't Recognize the operation");
+                throw new Error( errorLiner() + "can't Recognize the operation");
 
         }
 
@@ -1303,7 +1306,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
             helper.writeCommand("sw","$t0", pd.getAddress());
         }
         else
-            throw new Error("Invalid primitive for unaryMinus!");
+            throw new Error( errorLiner() + "Invalid primitive for unaryMinus!");
 
     }
 
@@ -1322,11 +1325,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         Descriptor condition = semanticStack.pop();
         if (condition instanceof PrimitiveDescriptor){
             if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
-                throw new Error("expr should be a boolean type");
+                throw new Error( errorLiner() + "expr should be a boolean type");
             }
         }
         else {
-            throw new Error("Wrong expr declaration");
+            throw new Error( errorLiner() + "Wrong expr declaration");
         }
 
         helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
@@ -1355,11 +1358,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         Descriptor condition = semanticStack.pop();
         if (condition instanceof PrimitiveDescriptor){
             if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
-                throw new Error("expr should be a boolean type");
+                throw new Error( errorLiner() + "expr should be a boolean type");
             }
         }
         else {
-            throw new Error("Wrong expr declaration");
+            throw new Error( errorLiner() + "Wrong expr declaration");
         }
 
 
@@ -1420,11 +1423,11 @@ public class CodeGeneratorImpl implements CodeGenerator {
         Descriptor condition = semanticStack.pop();
         if (condition instanceof PrimitiveDescriptor){
             if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
-                throw new Error("expr should be a boolean type");
+                throw new Error( errorLiner() + "expr should be a boolean type");
             }
         }
         else {
-            throw new Error("Wrong expr decleration");
+            throw new Error( errorLiner() + "Wrong expr decleration");
         }
 
         semanticStack.push(elseStartLabel);
@@ -1461,7 +1464,7 @@ public class CodeGeneratorImpl implements CodeGenerator {
         else if (pt == PrimitiveType.BOOLEAN_PRIMITIVE)
             type = "bool";
         else
-            throw new Error("Not a valid type!");
+            throw new Error( errorLiner() + "Not a valid type!");
         return type;
     }
     private final ArrayList<TokenType> constantTypes =
