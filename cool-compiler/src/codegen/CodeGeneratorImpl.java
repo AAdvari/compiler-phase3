@@ -80,6 +80,8 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "minus_minus":
             case "plus_plus":
             case "unary_minus":
+            case "expr_minus_minus":
+            case "expr_plus_plus":
                 unaryOperation(sem);
                 break;
             case "read_string":
