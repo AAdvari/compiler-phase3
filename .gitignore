@@ -10,3 +10,4 @@
 .gitignore
 /.idea/
 *.iml
+/cool-compiler/src/app.cool

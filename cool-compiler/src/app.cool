@@ -1,0 +1,359 @@
+class Main {
+    int main(){
+
+        // Declaration, cast, arrays, printing, reading, Strings, ....
+        print("Declaration, cast, arrays, printing, reading, Strings, ....");
+        print("\n");
+
+        let int x;
+        x = 23;
+
+        let int y;
+        y = 25;
+        let real z;
+        z = 2.33;
+
+        let int a,b,c;
+        let int[] array;
+
+        array = new Array(int, 5);
+
+        print(len(array));
+        print("\n");
+
+
+        array[3] = 1;
+        array[1] = in_int();
+        array[2] = 55;
+        print( array[1] ) ;
+        print("\n");
+        print( array[2] );
+        print("\n");
+
+        let int[] arrayCopy;
+        arrayCopy = array;
+        print(arrayCopy[2]);
+        print("\n");
+
+
+        let string s;
+        s = in_string();
+        print(s);
+
+        let string name;
+        name = "Amir Hossein";
+        print(name);
+        print("\n");
+
+        let string nameCopy;
+        nameCopy = name;
+        print(nameCopy);
+        print("\n");
+
+        let int amir;
+        amir = (int) 3.33;
+        print(amir);
+        print("\n");
+
+        let real amirhossein;
+        amirhossein = (real) 5;
+        print(amirhossein);
+        print("\n");
+
+
+        let bool b1,b2,b3;
+        b1 = true;
+        b2 = false;
+
+        print(b1);
+        print(b2);
+        print("\n");
+
+
+        // Errors :
+
+        // a = 7.8;  // assigning REAL_PRIMITIVE to INTEGER_PRIMITIVE is illegal
+
+        // amirhossein = 3; // assigning INTEGER_PRIMITIVE to REAL_PRIMITIVE is illegal
+
+        // b3 = 15; // assigning INTEGER_PRIMITIVE to BOOLEAN_PRIMITIVE is illegal
+
+        // a = "My Name Is Amir Hossein"; // assigning STRING_PRIMITIVE to INTEGER_PRIMITIVE is illegal
+
+        // arrayCopy = new Array(real, 7); // cant assign array with element type REAL_PRIMITIVE to array with element type INTEGER_PRIMITIVE
+
+        // Integer Arithmetic And Compares :
+
+        print("Integer Arithmetic And Compares");
+        print("\n");
+
+        print( 15 > 4);
+        print("\n");
+
+        print( 3 >= 7 );
+        print("\n");
+
+        print( 4 < 10);
+        print("\n");
+
+        print( 5 < 4);
+        print("\n");
+
+        print( ((29)%20) / 2 );
+        print("\n");
+
+        let int a1,a2,a3,a4;
+        a1 = 3;
+        a2 = 4;
+        a3 = 3;
+        a4 = 9*9 - 1;
+
+        print(a4);
+        print("\n");
+
+
+        print(a1+a2);
+        print("\n");
+
+        print(a1+a2-a3);
+        print("\n");
+
+        print(a2-a3);
+        print("\n");
+
+        print(a2*a3+a4);
+        print("\n");
+
+        print(a4/a2 + a3);
+        print("\n");
+
+        print(a4%a2 - a1);
+        print("\n");
+
+        print(a1==a2);
+        print("\n");
+
+        print(a1 < a2);
+        print("\n");
+
+        print(a1 <= a2);
+        print("\n");
+
+        print(a1 >= a2);
+        print("\n");
+
+        print(a2 >= a3);
+        print("\n");
+
+        print( ( a1 >= a3) && ( a2 > a3) );
+        print("\n");
+
+
+        // Real Arithmetic and compares :
+
+        print("Real Arithmetic and compares:");
+        print("\n");
+
+        let real r1,r2,r3,r4;
+        r1 = 3.5;
+        r2 = 1.2;
+        r3 = 3.5;
+        r4 = 7.0;
+
+        print(r1 + r2);
+        print("\n");
+
+        print(r1-r2);
+        print("\n");
+
+        print(r1+r1+r1-r2-r2+r3);
+        print("\n");
+
+        print( (r1+r3) == r4 );
+        print("\n");
+
+        print( r1/r2 + r3);
+        print("\n");
+
+        print( r3*r4-r2+r1);
+        print("\n");
+
+
+        print(r1==r1);
+        print("\n");
+
+        print(r1<=r2);
+        print("\n");
+
+        print(r3 <= r4);
+        print("\n");
+
+        print(r4 <= 1.2);
+        print("\n");
+
+        print(r4 < r3);
+        print("\n");
+
+        print(r4 > r3);
+        print("\n");
+
+        print(false || true);
+        print("\n");
+
+        print(true || true);
+        print("\n");
+
+        print(false && false);
+        print("\n");
+
+        print(false && true);
+        print("\n");
+
+        print(true && true);
+        print("\n");
+
+        print(false && false);
+        print("\n");
+
+        print(false == false);
+        print("\n");
+
+        print(false != false);
+        print("\n");
+
+        print(3.3/1.1 + 3.0*7.2 - 5.5);
+        print("\n");
+
+
+        // unary :
+        print("Unary Integer");
+        print("\n");
+
+        let int u1,u2,u3,u4;
+        u1 = 2;
+        u2 = u1++;
+        u3 = 5;
+        u4 = 12;
+        u3--;
+
+        print(u1);
+        print("\n");
+
+        print(u2);
+        print("\n");
+
+        print(u3);
+        print("\n");
+
+        print(u4);
+        print("\n");
+
+        print( (u4++) - (--u3) + u2 );
+        print("\n");
+        print(u4);
+        print("  ");
+        print(u3);
+        print("\n");
+
+
+        // unary Real :
+        print("Unary Real");
+        print("\n");
+
+        let real f1,f2,f3, f4;
+        f1 = 2.0;
+        f2 = f1++;
+        f3 = 5.0;
+        f4 = 12.0;
+        f3--;
+
+        print(f1);
+        print("\n");
+
+        print(f2);
+        print("\n");
+
+        print(f3);
+        print("\n");
+
+        print(f4);
+        print("\n");
+
+        print( (f4++) - (--f3) + f2 );
+        print("\n");
+        print(f4);
+        print("  ");
+        print(f3);
+        print("\n");
+
+
+        // not :
+        print("Not operator\n");
+
+        let bool be1,be2,be3;
+        be1 = false;
+        be2 = true;
+        be3 = (!be1) && be2;
+
+        print(b3);
+        print("  ");
+
+        b3 = !b3;
+
+        print(b3);
+        print("  ");
+
+        print( (b1 && b2) || b3 );
+
+        print("\n");
+
+
+        // Operate And Assign  :
+        print("Operate and assign: \n");
+
+        let int[] intArray;
+        intArray = new Array(int,4);
+        intArray[2] = 1;
+        intArray[2] += 3;
+        print(intArray[2]);
+        print("\n");
+
+        intArray[1] = intArray[2] + 5;
+
+        let int temp, temp1;
+        temp = intArray[2];
+        temp *= intArray[1];
+
+        print(temp);
+        print("\n");
+
+        temp1 = 83;
+        temp1 -= temp;
+        print(temp1);
+        print("\n");
+
+        temp1 /= temp;
+        print(temp);
+        print("\n");
+
+
+        let int move, move1;
+        move = 0;
+        move1 = 0;
+        while( move < 10 )
+        loop
+            move1 = 0;
+            while( move1 < 5)
+            loop
+                print(move);
+                print("  ");
+                print(move1);
+                print("\n");
+                move1++;
+            pool
+            move++;
+        pool
+
+
+    }
+}

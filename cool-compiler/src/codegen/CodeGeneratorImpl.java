@@ -141,7 +141,15 @@ public class CodeGeneratorImpl implements CodeGenerator {
             case "len":
                 len();
                 break;
-
+            case "start_be":
+                start_be_while();
+                break;
+            case "while":
+                while_dcl();
+                break;
+            case "complete_while":
+                complete_while();
+                break;
         }
     }
 
@@ -981,8 +989,6 @@ public class CodeGeneratorImpl implements CodeGenerator {
             PrimitiveDescriptor pd = new PrimitiveDescriptor(helper.getTempName(), "", PrimitiveType.BOOLEAN_PRIMITIVE);
             String allocatedAddress = helper.allocateMemory(pd);
             pd.setAddress(allocatedAddress);
-            String label = helper.labelMaker();
-            String label1 = helper.labelMaker();
             helper.writeComment(false,"Real Comparison : BiggerThan");
             helper.writeCommand("l.s", "$f0", firstOperand.getAddress());
             helper.writeCommand("l.s", "$f1", secondOperand.getAddress());
@@ -1270,6 +1276,48 @@ public class CodeGeneratorImpl implements CodeGenerator {
             throw new Error("Invalid primitive for unaryMinus!");
 
     }
+
+
+    // Loops :
+
+
+
+    private void start_be_while(){
+        String startLabel = helper.labelMaker();
+        helper.writeComment(false,"start of while loop with label" + startLabel);
+        helper.addLabel(startLabel+":");
+        Descriptor label = new Descriptor(startLabel);
+        semanticStack.push(label);
+    }
+    private void while_dcl(){
+        String endLabel = helper.labelMaker();
+        helper.writeComment(false,"while jz");
+        Descriptor condition = semanticStack.pop();
+        if (condition instanceof PrimitiveDescriptor){
+            if (((PrimitiveDescriptor) condition).type != PrimitiveType.BOOLEAN_PRIMITIVE){
+                throw new Error("expr should be a boolean type");
+            }
+        }
+        else {
+            throw new Error("Wrong expr declaration");
+        }
+
+        helper.writeCommand("la", "$t0",((PrimitiveDescriptor) condition).address);
+        helper.writeCommand("lw", "$t1", "0($t0)");
+        helper.writeCommand("beqz", "$t1",endLabel);
+        Descriptor endLable = new Descriptor(endLabel);
+        semanticStack.push(endLable);
+    }
+
+    private void complete_while(){
+        String endLabel = semanticStack.pop().symName;
+        String startLabel = semanticStack.pop().symName;
+        helper.writeComment(false,"complete while");
+        helper.writeCommand("j",startLabel);
+        helper.addLabel(endLabel+":");
+    }
+
+
     // utils:
     private String stringTypeOfPrimitiveType(PrimitiveType pt){
         String type;

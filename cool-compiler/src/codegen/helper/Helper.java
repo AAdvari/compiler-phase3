@@ -181,5 +181,9 @@ public class Helper {
         currentLabel++;
         return  s;
     }
+    public void addLabel(String label){
+        generatedCode.append(label);
+        addWhiteSpace(false);
+    }
 
 }
