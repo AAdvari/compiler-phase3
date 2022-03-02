@@ -1,7 +1,7 @@
 # Compiler final project (Cool)
 ## Shahid beheshti university 
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
+[![Build Status](https://github.com/AAdvari/compiler-phase3)
 
 this compiler is developed for compiler design course - fall 2020
 
