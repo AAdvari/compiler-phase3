@@ -5,7 +5,7 @@
 
 this compiler is developed for compiler design course - fall 2020
 
-- base on 32 bit mips architecture
+- based on 32 bit mips architecture
 - no dynamic runtime allocating
 
 > The project only meets the requirements which were
