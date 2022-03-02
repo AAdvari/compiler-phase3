@@ -1,37 +1,18 @@
-## Welcome to GitHub Pages
+## Welcome to Cool Compiler Page
 
-You can use the [editor on GitHub](https://github.com/AAdvari/compiler-phase3/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+You can use the [Repo Page](https://github.com/AAdvari/compiler-phase3) to see the details.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
 ### Markdown
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+this compiler is developed for compiler design course - fall 2020
 
-```markdown
-Syntax highlighted code block
+- based on 32 bit mips architecture
+- no dynamic runtime allocating
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/AAdvari/compiler-phase3/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+> The project only meets the requirements which were
+> highlighted by course assistants and is not a full compiler 
+> for real usage. 
 
 ### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+  amiradvari@gmail.com
